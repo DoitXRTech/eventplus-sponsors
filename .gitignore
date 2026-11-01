@@ -10,3 +10,4 @@ local/gotrue-bin
 .DS_Store
 .live-snapshot.json
 .taste-skill/
+.vercel
