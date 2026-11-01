@@ -9,7 +9,7 @@ import { SPONSORS } from './seed-data.mjs';
 const url = process.env.SUPABASE_URL;
 const anon = process.env.SUPABASE_ANON_KEY;
 const password = process.env.DEMO_PASSWORD || readFileSync('.demo-credentials', 'utf8').split('\n')[0].split(': ')[1];
-const BC = SPONSORS[0].id, GEB = SPONSORS[1].id, SURA = SPONSORS[2].id, BAV = SPONSORS[4].id;
+const BC = SPONSORS[0].id, GEB = SPONSORS[1].id, BAV = SPONSORS[4].id;
 
 let failed = 0;
 const check = (name, ok, extra = '') => {

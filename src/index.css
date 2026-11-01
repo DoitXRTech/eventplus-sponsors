@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; letter-spacing: -0.02em; }
+.font-body { font-family: 'Geist', system-ui, sans-serif; }
+.font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+body, html, #root { font-family: 'Geist', system-ui, sans-serif; background: #F5F2EC; }
+.accent-bg { background: #FF5A1F; }
+.accent-text { color: #FF5A1F; }
+.ink { color: #0F1419; }
+.ink-bg { background: #0F1419; }
+.cream-border { border-color: #E4E0D7; }
+.grain { background-image: radial-gradient(rgba(15,20,25,0.025) 1px, transparent 1px); background-size: 4px 4px; }
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #D4CFC1; border-radius: 3px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
