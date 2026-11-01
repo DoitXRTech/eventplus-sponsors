@@ -14,5 +14,9 @@ export default defineConfig({
   plugins: [react()],
   server: { port: 5173, strictPort: true, proxy: local },
   preview: { port: 4173, strictPort: true, proxy: local },
-  build: { sourcemap: false, target: 'es2020' },
+  build: {
+    sourcemap: false,
+    target: 'es2020',
+    rollupOptions: { output: { banner: '/*! (c) 2026 EventPlus. All rights reserved. */' } },
+  },
 });

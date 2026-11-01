@@ -39,7 +39,7 @@ export const IconButton = ({ Icon, onClick, label, disabled }) => (
 );
 
 const BTN = {
-  primary: 'accent-bg text-white hover:opacity-90',
+  primary: 'accent-bg text-white hover:opacity-90 max-sm:min-h-[44px]',
   dark: 'ink-bg text-white hover:opacity-90',
   ghost: 'border cream-border bg-white hover:bg-stone-50 text-stone-800',
   danger: 'border border-red-200 bg-white text-red-700 hover:bg-red-50',

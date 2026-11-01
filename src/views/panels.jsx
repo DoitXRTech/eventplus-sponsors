@@ -15,7 +15,8 @@ export const CONTEXTS = [
 ];
 
 /* ---------- Conversacion ---------- */
-export function Conversation({ sponsor, readOnly = false, maxHeight = '' }) {
+// quiet: en el portal la accion principal es aprobar; enviar un mensaje va como secundaria.
+export function Conversation({ sponsor, readOnly = false, maxHeight = '', quiet = false }) {
   const { me, isTeam, run, notify } = useStore();
   const [body, setBody] = useState('');
   const [file, setFile] = useState(null);
@@ -63,7 +64,7 @@ export function Conversation({ sponsor, readOnly = false, maxHeight = '' }) {
                 const startco = c.team === 'startco';
                 return (
                   <div key={c.id} className={`flex gap-2.5 ${mine ? 'flex-row-reverse' : ''}`}>
-                    <Avatar name={c.author_name} size={8} color={startco ? '#0F1419' : '#FF5A1F'} />
+                    <Avatar name={c.author_name} size={8} color={startco ? '#0F1419' : '#C93D0C'} />
                     <div className={`max-w-[85%] sm:max-w-[75%] min-w-0 ${mine ? 'items-end text-right' : ''}`}>
                       <div className="text-[11px] text-stone-500 mb-1">
                         <span className="font-medium text-stone-700">{c.author_name}</span>{c.author_role ? ` · ${c.author_role}` : ''} · {fmtTime(c.created_at)}
@@ -104,11 +105,11 @@ export function Conversation({ sponsor, readOnly = false, maxHeight = '' }) {
               {CONTEXTS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
             {isTeam && (
-              <label className="inline-flex items-center gap-1.5 text-xs text-stone-700 cursor-pointer">
-                <input type="checkbox" checked={internal} onChange={(e) => setInternal(e.target.checked)} /> <Lock size={11} /> Nota interna
+              <label className="inline-flex items-center gap-1.5 min-h-[32px] text-xs text-stone-700 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4" checked={internal} onChange={(e) => setInternal(e.target.checked)} /> <Lock size={11} /> Nota interna
               </label>
             )}
-            <Button kind={internal ? 'dark' : 'primary'} size="sm" Icon={Send} busy={busy} onClick={send} className="ml-auto">Enviar</Button>
+            <Button kind={internal ? 'dark' : quiet ? 'ghost' : 'primary'} size="sm" Icon={Send} busy={busy} onClick={send} className="ml-auto">Enviar</Button>
           </div>
         </div>
       )}
@@ -182,7 +183,8 @@ function AddAttendeeModal({ sponsor, onClose }) {
   );
 }
 
-export function AttendeesPanel({ sponsor, readOnly = false }) {
+// quiet: en el portal la accion principal es aprobar; agregar inscritos va como secundaria.
+export function AttendeesPanel({ sponsor, readOnly = false, quiet = false }) {
   const { data, run, notify, reload } = useStore();
   const [q, setQ] = useState('');
   const [adding, setAdding] = useState(false);
@@ -257,7 +259,7 @@ export function AttendeesPanel({ sponsor, readOnly = false }) {
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar asistente" aria-label="Buscar asistente"
             className="w-full pl-9 pr-3 py-2 text-sm bg-white border cream-border rounded-full outline-none focus:border-stone-400" />
         </label>
-        {!readOnly && <Button size="sm" kind="primary" Icon={Plus} disabled={left === 0} onClick={() => setAdding(true)}>Agregar</Button>}
+        {!readOnly && <Button size="sm" kind={quiet ? 'ghost' : 'primary'} Icon={Plus} disabled={left === 0} onClick={() => setAdding(true)}>Agregar</Button>}
         {!readOnly && <FileButton size="sm" Icon={Upload} accept=".csv,text/csv" busy={busy} disabled={left === 0} onFile={importCsv}>Importar CSV</FileButton>}
         <Button size="sm" Icon={Download} disabled={!sponsor.attendees.length} onClick={exportCsv}>Exportar</Button>
       </div>
@@ -317,7 +319,7 @@ export function StartupsPanel({ sponsor, readOnly = false }) {
         <div className="flex flex-col sm:flex-row gap-2">
           <Input className="flex-1" placeholder="Nombre de la startup" aria-label="Nombre de la startup" value={name} onChange={(e) => setName(e.target.value)} />
           <Input className="sm:w-40" placeholder="Sector" aria-label="Sector" value={sector} onChange={(e) => setSector(e.target.value)} />
-          <Button kind="primary" Icon={Plus} busy={busy} onClick={add}>Agregar</Button>
+          <Button Icon={Plus} busy={busy} onClick={add}>Agregar</Button>
         </div>
       )}
     </div>
@@ -358,7 +360,7 @@ export function CommitmentsList({ sponsor, canEdit = false, limit }) {
         })}
       </div>
       {limit && items.length > limit && (
-        <button onClick={() => setAll(!all)} className="mt-2 text-xs accent-text font-medium">{all ? 'Ver menos' : `Ver los ${items.length}`}</button>
+        <button onClick={() => setAll(!all)} className="mt-1 min-h-[32px] text-xs accent-text font-medium">{all ? 'Ver menos' : `Ver los ${items.length}`}</button>
       )}
     </div>
   );

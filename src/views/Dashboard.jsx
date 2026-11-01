@@ -54,7 +54,7 @@ export default function Dashboard({ setView }) {
           </div>
           <div className="font-display text-4xl ink">{pendingApproval}</div>
           <div className="text-sm text-stone-600 mt-1">{pendingApproval === 1 ? 'pieza esperando aprobación' : 'piezas esperando aprobación'}</div>
-          <button onClick={() => setView({ name: 'approvals' })} className="mt-4 text-xs accent-text font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
+          <button onClick={() => setView({ name: 'approvals' })} className="mt-3 min-h-[32px] text-xs accent-text font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
             Ver bandeja <ArrowRight size={12} />
           </button>
         </Card>
@@ -83,7 +83,7 @@ export default function Dashboard({ setView }) {
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <div className="font-display text-lg ink">{atRisk.length} {atRisk.length === 1 ? 'patrocinador' : 'patrocinadores'} con cupos por debajo del 60%</div>
-                <Pill bg="#FFE4D6" color="#FF5A1F">Atención</Pill>
+                <Pill bg="#FFE4D6" color="#B33609">Atención</Pill>
               </div>
               <p className="text-sm text-stone-700 mt-1">Recordemos a estos clientes que llenen sus cupos antes del evento. Cada cupo no usado es valor desperdiciado del paquete.</p>
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
@@ -118,7 +118,7 @@ export default function Dashboard({ setView }) {
               <div className="font-display text-xl ink">Embudo de procesos</div>
               <div className="text-sm text-stone-600">Estado operativo de cada patrocinador (post-venta)</div>
             </div>
-            <button onClick={() => setView({ name: 'pipeline' })} className="text-xs font-medium text-stone-700 hover:ink inline-flex items-center gap-1 whitespace-nowrap">
+            <button onClick={() => setView({ name: 'pipeline' })} className="min-h-[32px] text-xs font-medium text-stone-700 hover:ink inline-flex items-center gap-1 whitespace-nowrap">
               Ver kanban <ArrowRight size={12} />
             </button>
           </div>

@@ -16,7 +16,7 @@ export const TIER_VALUES = {
 
 export const TIER_COLORS = {
   Partner:   { bg: '#0F1419', fg: '#FFFFFF', soft: '#E8E5DD' },
-  Unicorn:   { bg: '#FF5A1F', fg: '#FFFFFF', soft: '#FFE4D6' },
+  Unicorn:   { bg: '#C93D0C', fg: '#FFFFFF', soft: '#FFE4D6' },
   'Serie B': { bg: '#1B4332', fg: '#FFFFFF', soft: '#D4E5DB' },
   'Serie A': { bg: '#2D5A87', fg: '#FFFFFF', soft: '#D6E2EF' },
   Seed:      { bg: '#8B5A3C', fg: '#FFFFFF', soft: '#EAD9CC' },
@@ -77,10 +77,10 @@ export const ticketCapacity = capacityOf('tickets');
 export const startupCapacity = capacityOf('startups');
 
 export const STAGES = [
-  { key: 'kickoff',    label: 'Kickoff',         color: '#A8A29E', desc: 'Onboarding inicial, recolección de datos' },
+  { key: 'kickoff',    label: 'Kickoff',         color: '#78716C', desc: 'Onboarding inicial, recolección de datos' },
   { key: 'contract',   label: 'Contrato',        color: '#7A6E5D', desc: 'Negociación y firma del contrato' },
   { key: 'production', label: 'Producción',      color: '#8B5A3C', desc: 'Equipo creando piezas y artes' },
-  { key: 'approvals',  label: 'Aprobaciones',    color: '#FF5A1F', desc: 'Cliente revisando piezas' },
+  { key: 'approvals',  label: 'Aprobaciones',    color: '#C93D0C', desc: 'Cliente revisando piezas' },
   { key: 'sponsoring', label: 'Apadrinamientos', color: '#2D5A87', desc: 'Confirmando startups apadrinadas' },
   { key: 'ready',      label: 'Listo p/ evento', color: '#1B4332', desc: 'Todo aprobado, esperando el día' },
   { key: 'post',       label: 'Post-evento',     color: '#0F1419', desc: 'Evidencias, NPS y cierre' },
@@ -91,7 +91,7 @@ export const CONTRACT_STATUSES = ['No iniciado', 'Enviado', 'En revisión legal'
 
 export const ASSET_STATUS = {
   produccion: { label: 'En producción', bg: '#F1ECDF', fg: '#7A6E5D' },
-  pendiente:  { label: 'Pendiente',     bg: '#FFE4D6', fg: '#FF5A1F' },
+  pendiente:  { label: 'Pendiente',     bg: '#FFE4D6', fg: '#B33609' },
   aprobado:   { label: 'Aprobado',      bg: '#D4E5DB', fg: '#1B4332' },
   cambios:    { label: 'Cambios pedidos', bg: '#FDE2E2', fg: '#B42318' },
 };

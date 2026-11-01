@@ -95,7 +95,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
               {pending.length > 0 && <span>{pending.length === 1 ? 'Tienes 1 pieza esperando tu aprobación' : `Tienes ${pending.length} piezas esperando tu aprobación`}{p?.status === 'enviada' ? ' y ' : '.'}</span>}
               {p?.status === 'enviada' && <span>{pending.length ? 'una propuesta por revisar.' : 'Tienes una propuesta por revisar.'}</span>}
             </div>
-            <Button kind="primary" size="sm" onClick={() => scrollTo(pending.length ? 'aprobaciones' : 'propuesta')}>Revisar ahora</Button>
+            <Button size="sm" onClick={() => scrollTo(pending.length ? 'aprobaciones' : 'propuesta')}>Revisar ahora</Button>
           </Card>
         )}
 
@@ -147,7 +147,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
         )}
 
         <Section id="inscritos" title="Tus invitados al evento" sub={`Tu paquete incluye ${s.ticketCap} entradas de dos días.`}>
-          <AttendeesPanel sponsor={s} readOnly={preview} />
+          <AttendeesPanel sponsor={s} readOnly={preview} quiet />
         </Section>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -160,7 +160,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
         </div>
 
         <Section id="conversacion" title="Conversación con StartCo" sub="Escríbenos aquí: el equipo lo ve en su panel.">
-          <Conversation sponsor={s} readOnly={preview} maxHeight="max-h-[60vh]" />
+          <Conversation sponsor={s} readOnly={preview} maxHeight="max-h-[60vh]" quiet />
         </Section>
 
         <div className="text-center text-[11px] text-stone-500 py-4 inline-flex w-full justify-center items-center gap-1.5"><MessageSquare size={12} /> ¿Dudas? Escríbenos en la conversación.</div>

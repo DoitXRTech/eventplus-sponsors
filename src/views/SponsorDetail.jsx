@@ -37,7 +37,7 @@ function Header({ s, setView }) {
   const setStage = (key) => run(() => supabase.from('sponsors').update({ stage: key }).eq('id', s.id), `${s.name} pasó a ${STAGES.find((x) => x.key === key).label}`);
   return (
     <div className="bg-white border-b cream-border px-4 sm:px-8 pt-4 sm:pt-6 pb-5">
-      <button onClick={() => setView({ name: 'sponsors' })} className="text-xs text-stone-600 hover:ink inline-flex items-center gap-1 mb-4"><ArrowLeft size={12} /> Patrocinadores</button>
+      <button onClick={() => setView({ name: 'sponsors' })} className="min-h-[32px] text-xs text-stone-600 hover:ink inline-flex items-center gap-1 mb-2"><ArrowLeft size={12} /> Patrocinadores</button>
       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
         <div className="flex items-center gap-4 flex-1 min-w-0">
           <SponsorLogo sponsor={s} size="xl" />
@@ -100,7 +100,7 @@ function Overview({ s, data, go }) {
       </Card>
       <Card className="lg:col-span-7 p-5 sm:p-6">
         <div className="flex items-center justify-between mb-3"><div className="font-display text-lg ink">Última conversación</div>
-          <button onClick={() => go('comments')} className="text-xs accent-text font-medium">Ver todo</button></div>
+          <button onClick={() => go('comments')} className="min-h-[32px] px-1 text-xs accent-text font-medium">Ver todo</button></div>
         {last.length === 0 ? <Empty>Todavía no hay mensajes.</Empty> : last.map((c) => (
           <div key={c.id} className="py-2 border-b cream-border last:border-0">
             <div className="text-[11px] text-stone-500">{c.author_name} · {ago(c.created_at)}{c.internal ? ' · nota interna' : ''}</div>
@@ -153,7 +153,7 @@ function NewAssetModal({ s, onClose }) {
         <FileButton size="sm" Icon={Upload} onFile={setFile}>{file ? 'Cambiar archivo' : 'Elegir archivo'}</FileButton>
         <span className="text-xs text-stone-600 truncate">{file ? file.name : 'Ningún archivo'}</span>
       </div>
-      <label className="flex items-center gap-2 text-sm text-stone-700"><input type="checkbox" checked={sendNow} onChange={(e) => setSendNow(e.target.checked)} /> Enviar al cliente para aprobación ahora</label>
+      <label className="flex items-center gap-2 min-h-[32px] text-sm text-stone-700"><input type="checkbox" className="w-4 h-4" checked={sendNow} onChange={(e) => setSendNow(e.target.checked)} /> Enviar al cliente para aprobación ahora</label>
     </Modal>
   );
 }
@@ -283,7 +283,7 @@ function Contract({ s }) {
 }
 
 /* ---------- Propuesta ---------- */
-const PROPOSAL_STATUS = { enviada: ['Esperando al cliente', '#FFE4D6', '#FF5A1F'], aprobada: ['Aprobada', '#D4E5DB', '#1B4332'], cambios: ['Cambios pedidos', '#FDE2E2', '#B42318'] };
+const PROPOSAL_STATUS = { enviada: ['Esperando al cliente', '#FFE4D6', '#B33609'], aprobada: ['Aprobada', '#D4E5DB', '#1B4332'], cambios: ['Cambios pedidos', '#FDE2E2', '#B42318'] };
 
 function NewProposalModal({ s, onClose }) {
   const { me, run, notify } = useStore();

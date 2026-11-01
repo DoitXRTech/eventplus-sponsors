@@ -6,8 +6,8 @@
 .font-body { font-family: 'Geist', system-ui, sans-serif; }
 .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 body, html, #root { font-family: 'Geist', system-ui, sans-serif; background: #F5F2EC; }
-.accent-bg { background: #FF5A1F; }
-.accent-text { color: #FF5A1F; }
+.accent-bg { background: #C93D0C; }
+.accent-text { color: #C93D0C; }
 .ink { color: #0F1419; }
 .ink-bg { background: #0F1419; }
 .cream-border { border-color: #E4E0D7; }
@@ -15,3 +15,8 @@ body, html, #root { font-family: 'Geist', system-ui, sans-serif; background: #F5
 .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
 .scrollbar-thin::-webkit-scrollbar-thumb { background: #D4CFC1; border-radius: 3px; }
 .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+
+/* iOS hace zoom al enfocar un campo con fuente < 16 px: en el telefono, 16 px. */
+@media (max-width: 639px) {
+  input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea { font-size: 16px !important; }
+}

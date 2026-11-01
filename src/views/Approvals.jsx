@@ -39,7 +39,7 @@ export default function ApprovalsView({ setView }) {
       <Card>
         <div className="px-5 py-4 border-b cream-border flex items-center gap-2">
           <div className="font-display text-lg ink flex-1">Esperando al cliente</div>
-          <Pill bg="#FFE4D6" color="#FF5A1F">{pending.length}</Pill>
+          <Pill bg="#FFE4D6" color="#B33609">{pending.length}</Pill>
         </div>
         {pending.length === 0 ? <div className="p-5"><Empty>No hay piezas esperando aprobación.</Empty></div> : pending.map(({ a, s }) => {
           const d = daysSince(a.sent_at);

@@ -33,7 +33,7 @@ export default function SponsorsList({ setView }) {
   const list = data.sponsors.filter(f.test).filter((s) => !nq || stripDiacritics(`${s.name} ${s.contact_name} ${s.sector}`).includes(nq));
   const flags = (s) => (
     <span className="inline-flex flex-wrap gap-1">
-      {s.pendingApprovals > 0 && <Pill bg="#FFE4D6" color="#FF5A1F"><AlertCircle size={10} /> {s.pendingApprovals} por aprobar</Pill>}
+      {s.pendingApprovals > 0 && <Pill bg="#FFE4D6" color="#B33609"><AlertCircle size={10} /> {s.pendingApprovals} por aprobar</Pill>}
       {atRiskTickets(s) && <Pill bg="#FDE2E2" color="#B42318"><Ticket size={10} /> Cupos bajos</Pill>}
     </span>
   );
