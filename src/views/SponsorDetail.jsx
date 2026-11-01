@@ -425,9 +425,11 @@ function Post({ s }) {
 }
 
 /* ---------- Pantalla ---------- */
-export default function SponsorDetail({ id, tab: initialTab, setView }) {
+export default function SponsorDetail({ id, tab: hashTab, setView }) {
   const { data } = useStore();
-  const [tab, setTab] = useState(TABS.some((t) => t.key === initialTab) ? initialTab : 'overview');
+  // La pestana vive en el hash: recargar, atras/adelante y links directos la respetan.
+  const tab = TABS.some((t) => t.key === hashTab) ? hashTab : 'overview';
+  const setTab = (key) => setView({ name: 'sponsor', id, tab: key }, { keepScroll: true });
   const s = data.byId[id];
   if (!s) return <div className="p-8"><Empty>Este patrocinador no existe o fue borrado.</Empty></div>;
   const badge = { comments: s.comments.length, assets: s.pendingApprovals + s.assets.filter((a) => a.status === 'cambios').length, attendees: s.inscritos };

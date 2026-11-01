@@ -169,7 +169,7 @@ function AddAttendeeModal({ sponsor, onClose }) {
   const save = wrap(async () => {
     if (!f.name.trim()) { notify('Escribe el nombre.', 'error'); return; }
     if (!EMAIL_RE.test(f.email.trim())) { notify('Revisa el email: no tiene un formato válido.', 'error'); return; }
-    const ok = await run(() => supabase.from('attendees').insert({ sponsor_id: sponsor.id, name: f.name.trim(), email: f.email.trim().toLowerCase(), role: f.role.trim(), day: f.day, status: 'invitado' }), `${f.name.trim()} quedó inscrito`);
+    const ok = await run(() => supabase.from('attendees').insert({ sponsor_id: sponsor.id, name: f.name.trim(), email: f.email.trim().toLowerCase(), role: f.role.trim(), day: f.day, status: 'invitado' }), `Inscripción agregada: ${f.name.trim()}`);
     if (ok) onClose();
   });
   return (
@@ -280,7 +280,7 @@ export function AttendeesPanel({ sponsor, readOnly = false }) {
                   {Object.entries(ATTENDEE_STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               )}
-              {!readOnly && <IconButton Icon={Trash2} label={`Quitar a ${a.name}`} onClick={() => window.confirm(`¿Quitar a ${a.name} de los inscritos?`) && run(() => supabase.from('attendees').delete().eq('id', a.id), `${a.name} ya no está inscrito`)} />}
+              {!readOnly && <IconButton Icon={Trash2} label={`Quitar a ${a.name}`} onClick={() => window.confirm(`¿Quitar a ${a.name} de los inscritos?`) && run(() => supabase.from('attendees').delete().eq('id', a.id), `Inscripción quitada: ${a.name}`)} />}
               </div>
             </div>
           ))}

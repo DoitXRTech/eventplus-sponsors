@@ -27,9 +27,9 @@ function useHashView() {
     window.addEventListener('hashchange', on);
     return () => window.removeEventListener('hashchange', on);
   }, []);
-  const setView = (v) => {
+  const setView = (v, { keepScroll = false } = {}) => {
     window.location.hash = `/${v.name}${v.id ? `/${v.id}` : ''}${v.id && v.tab ? `/${v.tab}` : ''}`;
-    window.scrollTo(0, 0);
+    if (!keepScroll) window.scrollTo(0, 0);
   };
   return [view, setView];
 }
