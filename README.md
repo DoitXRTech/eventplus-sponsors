@@ -20,6 +20,8 @@ por RLS en Postgres, archivos en un bucket privado con URLs firmadas de 10 minut
    `./scripts/go-live.sh --skip-sql`.
 3. `npm run build` y servir `dist/` (estático; Vercel o cualquier hosting). En el hosting van
    solo `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`.
+   En Vercel las carga `./scripts/vercel-env.sh` (production, preview y development); sin
+   ellas, un build hecho en Vercel sale sin Supabase y la app muestra "Falta configurar Supabase".
 4. Recomendado en el dashboard: Authentication > Sign In / Providers > desactivar "Allow new
    users to sign up". Las cuentas las crea `npm run users`; un registro abierto no ve nada
    (no tiene perfil), pero no hace falta dejarlo abierto.
