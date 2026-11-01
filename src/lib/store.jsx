@@ -47,7 +47,7 @@ export function humanError(err) {
   if (m.includes('VERSION_VIEJA')) return 'Solo se puede revisar la última versión de la propuesta.';
   if (err?.code === '23505' && m.includes('attendees')) return 'Esa persona ya está inscrita (mismo email).';
   if (err?.code === '23505') return 'Ya existe un registro igual.';
-  if (err?.code === '23514' && m.includes('email')) return 'Revisa el email: no tiene un formato válido.';
+  if (err?.code === '23514' && m.includes('email')) return 'El email no tiene un formato válido.';
   if (err?.code === '23514') return 'Algún dato no es válido. Revisa el formulario.';
   if (err?.code === '42501' || /row-level security|NO_AUTORIZADO|Unauthorized|not allowed/i.test(m)) return 'No tienes permiso para esta acción.';
   if (/payload too large|exceeded the maximum allowed size/i.test(m)) return 'El archivo pesa más de 25 MB.';

@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  ClipboardCheck, FileSignature, Calendar, Ticket, ArrowRight, MessageSquare, Upload, CheckCircle2, Layers, Image as ImageIcon, Trophy, Info,
+  ClipboardCheck, FileSignature, Calendar, Ticket, ArrowRight, MessageSquare, Upload, CheckCircle2, Layers, Image as ImageIcon, Trophy,
 } from 'lucide-react';
 import { STAGES, TIERS, TIER_COLORS, fmtCOP } from '../lib/catalog.js';
 import { useStore, daysUntil, fmtDate, ago, daysSince } from '../lib/store.jsx';
@@ -23,7 +23,6 @@ export default function Dashboard({ setView }) {
   const ev = data.event;
   const totalValue = S.reduce((a, x) => a + Number(x.value_cop), 0);
   const pendingApproval = S.reduce((a, x) => a + x.pendingApprovals, 0);
-  const inProcess = S.filter((s) => s.stage !== 'post').length;
   const toEvent = daysUntil(ev?.start_date);
   const funnel = STAGES.map((st) => {
     const inStage = S.filter((s) => s.stage === st.key);
@@ -40,7 +39,7 @@ export default function Dashboard({ setView }) {
         <Card className="col-span-2 lg:col-span-5 p-6 sm:p-7 ink-bg text-white relative overflow-hidden">
           <div className="text-[13px] text-stone-400 mb-3">Patrocinadores confirmados · {ev?.name}</div>
           <div className="font-display text-5xl mb-2">{S.length}</div>
-          <div className="text-sm text-stone-300">{inProcess} en proceso operativo · {fmtCOP(totalValue)} en valor total</div>
+          <div className="text-sm text-stone-300">{fmtCOP(totalValue)} en paquetes vendidos</div>
           <div className="mt-6 flex flex-wrap items-center gap-4 text-xs">
             <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" />Listos <b className="text-white ml-1">{S.filter((s) => s.stage === 'ready' || s.stage === 'post').length}</b></span>
             <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full" style={{ background: '#FF5A1F' }} />En curso <b className="text-white ml-1">{S.filter((s) => s.stage !== 'ready' && s.stage !== 'post').length}</b></span>
@@ -84,7 +83,7 @@ export default function Dashboard({ setView }) {
                 <div className="font-display text-lg ink">{atRisk.length} {atRisk.length === 1 ? 'patrocinador' : 'patrocinadores'} con cupos por debajo del 60%</div>
                 <Pill bg="#FFE4D6" color="#B33609">Atención</Pill>
               </div>
-              <p className="text-sm text-stone-700 mt-1">Recordemos a estos clientes que llenen sus cupos antes del evento. Cada cupo no usado es valor desperdiciado del paquete.</p>
+              <p className="text-sm text-stone-700 mt-1">Cada cupo sin usar es valor del paquete que el patrocinador pierde. Abre su ficha para recordarle que inscriba a sus invitados.</p>
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
                 {atRisk.map((s) => (
                   <button key={s.id} onClick={() => setView({ name: 'sponsor', id: s.id })}
@@ -114,8 +113,8 @@ export default function Dashboard({ setView }) {
         <Card className="lg:col-span-7 p-5 sm:p-7">
           <div className="flex items-start justify-between gap-3 mb-1">
             <div>
-              <div className="font-display text-xl ink">Embudo de procesos</div>
-              <div className="text-sm text-stone-600">Estado operativo de cada patrocinador (post-venta)</div>
+              <div className="font-display text-xl ink">Patrocinadores por etapa</div>
+              <div className="text-sm text-stone-600">Cuántos hay en cada etapa y cuánto llevan ahí</div>
             </div>
             <button onClick={() => setView({ name: 'pipeline' })} className="min-h-[32px] text-xs font-medium text-stone-700 hover:ink inline-flex items-center gap-1 whitespace-nowrap">
               Ver kanban <ArrowRight size={12} />
@@ -138,8 +137,8 @@ export default function Dashboard({ setView }) {
                   </div>
                 </div>
                 <div className="col-span-3 sm:col-span-2 text-right">
-                  <div className="text-sm ink font-medium">{f.count} <span className="hidden sm:inline">{f.count === 1 ? 'cliente' : 'clientes'}</span></div>
-                  {f.count > 0 && <div className="text-xs text-stone-500">~{f.avgDays} d en etapa</div>}
+                  <div className="text-sm ink font-medium">{f.count} <span className="hidden sm:inline">{f.count === 1 ? 'patrocinador' : 'patrocinadores'}</span></div>
+                  {f.count > 0 && <div className="text-xs text-stone-500">{f.avgDays} {f.avgDays === 1 ? 'día' : 'días'} en promedio</div>}
                 </div>
               </div>
             ))}
@@ -173,7 +172,7 @@ export default function Dashboard({ setView }) {
             <div className="font-display text-xl ink">Prospectos</div>
             <Pill bg="#F1ECDF" color="#6B5F4F">Datos de ejemplo</Pill>
           </div>
-          <div className="text-sm text-stone-600 mb-5">{data.prospects.length} en negociación (el pipeline de ventas vive en HubSpot)</div>
+          <div className="text-sm text-stone-600 mb-5">{data.prospects.length} en negociación</div>
           <div className="space-y-2">
             {data.prospects.map((p) => (
               <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-stone-50">
@@ -189,12 +188,11 @@ export default function Dashboard({ setView }) {
               </div>
             ))}
           </div>
-          <div className="mt-4 text-xs text-stone-500 flex items-start gap-1.5"><Info size={12} className="mt-0.5 flex-shrink-0" /> HubSpot no está conectado en este demo.</div>
         </Card>
 
         <Card className="lg:col-span-8 p-5 sm:p-7">
           <div className="font-display text-xl ink mb-1">Distribución por paquete</div>
-          <div className="text-sm text-stone-600 mb-6">Patrocinadores confirmados por tier · valor sin IVA</div>
+          <div className="text-sm text-stone-600 mb-6">Patrocinadores confirmados por paquete · valores sin IVA</div>
           <div className="grid grid-cols-2 sm:grid-cols-4 2xl:grid-cols-7 gap-3">
             {TIERS.map((t) => {
               const arr = S.filter((s) => s.tier === t);

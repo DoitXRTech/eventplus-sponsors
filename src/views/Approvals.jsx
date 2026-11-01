@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Clock, Info, MessageSquare } from 'lucide-react';
+import { Bell, Clock, MessageSquare } from 'lucide-react';
 import { useStore, daysSince, fmtDate } from '../lib/store.jsx';
 import { supabase } from '../lib/supabase.js';
 import { Card, Pill, TierPill, SponsorLogo, Button, DownloadButton, Empty, useBusy } from '../ui.jsx';
@@ -9,7 +9,7 @@ function ReminderButton({ asset, sponsor }) {
   const [busy, wrap] = useBusy();
   const send = wrap(() => run(() => supabase.from('comments').insert({
     sponsor_id: sponsor.id, author_id: me.id, author_name: me.full_name, author_role: me.title, team: 'startco',
-    body: `Recordatorio: la pieza "${asset.name}" sigue esperando su aprobación desde el ${fmtDate(asset.sent_at)}. La pueden revisar en su portal.`,
+    body: `Recordatorio: la pieza "${asset.name}" espera tu aprobación desde el ${fmtDate(asset.sent_at)}. Puedes revisarla en tu portal.`,
     context_kind: 'arte', context_label: asset.name,
   }), `Recordatorio publicado en la conversación de ${sponsor.name}`));
   return <Button size="sm" Icon={Bell} busy={busy} onClick={send}>Recordar</Button>;
@@ -75,10 +75,6 @@ export default function ApprovalsView({ setView }) {
         ))}
       </Card>
 
-      <div className="text-xs text-stone-600 flex items-start gap-2 px-1">
-        <Info size={14} className="mt-0.5 flex-shrink-0" />
-        <span>Las piezas pendientes aparecen en el portal del patrocinador, que las aprueba o pide cambios desde ahí. Este demo no envía correos: el botón Recordar deja el aviso en la conversación del patrocinador.</span>
-      </div>
     </div>
   );
 }

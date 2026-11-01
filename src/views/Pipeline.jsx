@@ -3,7 +3,7 @@ import { Clock, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { STAGES, TIERS, fmtCOP } from '../lib/catalog.js';
 import { useStore } from '../lib/store.jsx';
 import { supabase } from '../lib/supabase.js';
-import { Pill, TierPill, SponsorLogo } from '../ui.jsx';
+import { TierPill, SponsorLogo } from '../ui.jsx';
 
 export default function PipelineKanban({ setView }) {
   const { data, run } = useStore();
@@ -18,7 +18,6 @@ export default function PipelineKanban({ setView }) {
     <div className="px-4 sm:px-8 py-6 sm:py-8">
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="text-sm text-stone-600">{S.length} patrocinadores {tier ? `en ${tier}` : 'confirmados'}</div>
-        <Pill bg="#FFE4D6" color="#B33609">Operativo · post-venta</Pill>
         <label className="ml-auto inline-flex items-center gap-2 text-xs text-stone-600">
           Paquete
           <select value={tier} onChange={(e) => setTier(e.target.value)} className="px-3 py-1.5 text-xs border cream-border rounded-full bg-white outline-none">

@@ -17,9 +17,8 @@ export default function SettingsView() {
   });
   const team = data.profiles.filter((p) => p.kind === 'team');
   const integrations = [
-    { name: 'Supabase', desc: 'Base de datos, accesos y archivos', ok: true },
-    { name: 'HubSpot', desc: 'Prospectos y contactos: en el demo son datos de ejemplo', ok: false },
-    { name: 'Correo', desc: 'Avisos al cliente: en el demo quedan en la conversación', ok: false },
+    { name: 'HubSpot', desc: 'Prospectos y contactos de ventas', ok: false },
+    { name: 'Correo', desc: 'Avisos por correo a los patrocinadores', ok: false },
   ];
   return (
     <div className="px-4 sm:px-8 py-6 sm:py-8 grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-5xl">
@@ -44,7 +43,6 @@ export default function SettingsView() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-stone-500 mt-4">Las cuentas nuevas (equipo o cliente) se crean con <code className="font-mono">npm run users</code>, como explica el README.</p>
       </Card>
       <Card className="p-5 sm:p-6">
         <div className="font-display text-lg ink mb-3">Integraciones</div>

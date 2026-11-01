@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogOut, ArrowLeft, Eye, ClipboardCheck, CheckCircle2, MessageSquare, FileText, Image as ImageIcon, Calendar } from 'lucide-react';
+import { LogOut, ArrowLeft, Eye, ClipboardCheck, CheckCircle2, FileText, Image as ImageIcon, Calendar } from 'lucide-react';
 import { ASSET_STATUS } from '../lib/catalog.js';
 import { useStore, daysUntil, fmtDate, daysSince } from '../lib/store.jsx';
 import { supabase } from '../lib/supabase.js';
@@ -13,14 +13,14 @@ function Decision({ onDecide, readOnly, approveLabel = 'Aprobar', approveValue =
   const [asking, setAsking] = useState(false);
   const [note, setNote] = useState('');
   const [busy, wrap] = useBusy();
-  if (readOnly) return <span className="text-xs text-stone-500">El cliente decide desde aquí.</span>;
+  if (readOnly) return <span className="text-xs text-stone-500">Lo decide el patrocinador.</span>;
   const decide = wrap(async (d) => { const ok = await onDecide(d, note.trim()); if (ok) { setAsking(false); setNote(''); } });
   if (asking) return (
     <div className="w-full space-y-2">
       <Textarea placeholder="Cuéntanos qué hay que cambiar" aria-label="Qué hay que cambiar" value={note} onChange={(e) => setNote(e.target.value)} autoFocus />
       <div className="flex gap-2 justify-end">
         <Button size="sm" onClick={() => setAsking(false)}>Cancelar</Button>
-        <Button size="sm" kind="dark" busy={busy} disabled={!note.trim()} onClick={() => decide('cambios')}>Enviar cambios</Button>
+        <Button size="sm" kind="dark" busy={busy} disabled={!note.trim()} onClick={() => decide('cambios')}>Enviar comentarios</Button>
       </div>
     </div>
   );
@@ -61,7 +61,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
     <div className="min-h-dvh font-body" style={{ background: '#F5F2EC' }}>
       {preview && (
         <div className="ink-bg text-white px-4 sm:px-8 py-2.5 text-xs flex flex-wrap items-center gap-x-3 gap-y-2">
-          <Eye size={14} /> <span className="flex-1 min-w-[180px]">Vista previa del portal de {s.name}: así lo ve el cliente. Solo lectura.</span>
+          <Eye size={14} /> <span className="flex-1 min-w-[180px]">Vista previa del portal de {s.name}, tal como lo ve el patrocinador. Solo lectura.</span>
           <select value={s.id} onChange={(e) => setView({ name: 'portal', id: e.target.value })} aria-label="Ver otro patrocinador" className="text-stone-900 px-2 py-1 rounded-full text-xs max-w-[180px]">
             {data.sponsors.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
           </select>
@@ -113,7 +113,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
           ))}
         </div>
 
-        <Section id="aprobaciones" title="Piezas para aprobar" sub="Lo que nuestro equipo produjo con tu marca. Aprueba o cuéntanos qué cambiar.">
+        <Section id="aprobaciones" title="Piezas para aprobar" sub="Lo que preparamos con tu marca. Apruébalo o pide cambios.">
           {visible.length === 0 ? <Empty>Todavía no hay piezas para revisar.</Empty> : (
             <div className="divide-y divide-stone-100">
               {[...pending, ...visible.filter((a) => a.status !== 'pendiente')].map((a) => (
@@ -121,7 +121,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
                   <ImageIcon size={16} className="text-stone-500 flex-shrink-0" />
                   <div className="flex-1 min-w-[150px]">
                     <div className="text-sm ink">{a.name}</div>
-                    <div className="text-xs text-stone-500">{a.status === 'pendiente' && a.sent_at ? `Enviada hace ${daysSince(a.sent_at)} d` : a.reviewed_at ? `Revisada el ${fmtDate(a.reviewed_at)}` : ''}</div>
+                    <div className="text-xs text-stone-500">{a.status === 'pendiente' && a.sent_at ? `Enviada hace ${daysSince(a.sent_at)} ${daysSince(a.sent_at) === 1 ? 'día' : 'días'}` : a.reviewed_at ? `Revisada el ${fmtDate(a.reviewed_at)}` : ''}</div>
                   </div>
                   <Pill bg={ASSET_STATUS[a.status].bg} color={ASSET_STATUS[a.status].fg}>{ASSET_STATUS[a.status].label}</Pill>
                   <DownloadButton path={a.file_path} label="Ver pieza" />
@@ -153,16 +153,15 @@ export default function ClientPortal({ id, preview = false, setView }) {
           {s.startupCap > 0 && <Section title="Startups que apadrinas"><StartupsPanel sponsor={s} readOnly={preview} /></Section>}
           <Section title="Lo que incluye tu paquete"><CommitmentsList sponsor={s} limit={6} /></Section>
           <Section title="Tu logo"><LogoUploader s={s} readOnly={preview} /></Section>
-          <Section title="Documentos legales" sub="RUT y cámara de comercio para el contrato y la factura.">
+          <Section title="Documentos legales" sub="Sube el RUT y el certificado de cámara de comercio. Los usamos para el contrato y la factura.">
             <DocumentList sponsor={s} kind="legal" folder="legal" canUpload readOnly={preview} uploadLabel="Subir documento" empty="Todavía no subiste documentos." />
           </Section>
         </div>
 
-        <Section id="conversacion" title="Conversación con StartCo" sub="Escríbenos aquí: el equipo lo ve en su panel.">
+        <Section id="conversacion" title="Conversación con StartCo" sub="Escríbenos aquí. Te respondemos en esta misma conversación.">
           <Conversation sponsor={s} readOnly={preview} maxHeight="max-h-[60vh]" quiet />
         </Section>
 
-        <div className="text-center text-xs text-stone-500 py-4 inline-flex w-full justify-center items-center gap-1.5"><MessageSquare size={12} /> ¿Dudas? Escríbenos en la conversación.</div>
       </main>
     </div>
   );

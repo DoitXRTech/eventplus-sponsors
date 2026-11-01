@@ -143,7 +143,7 @@ function NewAssetModal({ s, onClose }) {
     const ok = await run(() => supabase.from('assets').insert({
       sponsor_id: s.id, name: name.trim().slice(0, 160), file_path: path, file_name: file?.name || null, created_by: me.id,
       status: sendNow ? 'pendiente' : 'produccion', sent_at: sendNow ? new Date().toISOString() : null,
-    }), sendNow ? 'Pieza enviada al cliente para aprobación' : 'Pieza guardada en producción');
+    }), sendNow ? 'Pieza enviada al patrocinador para aprobación' : 'Pieza guardada en producción');
     if (ok) onClose();
   });
   return (
@@ -180,7 +180,7 @@ function AssetRow({ a, s }) {
           <div className="text-sm ink truncate">{a.name}</div>
           <div className="text-xs text-stone-500 truncate">
             {a.file_name || 'Sin archivo'}
-            {a.status === 'pendiente' && a.sent_at && ` · esperando hace ${daysSince(a.sent_at)} d`}
+            {a.status === 'pendiente' && a.sent_at && ` · esperando hace ${daysSince(a.sent_at)} ${daysSince(a.sent_at) === 1 ? 'día' : 'días'}`}
             {a.status === 'aprobado' && a.reviewed_at && ` · aprobada el ${fmtDate(a.reviewed_at)}`}
           </div>
         </div>
@@ -238,7 +238,6 @@ function Assets({ s }) {
             <li>Medidas finales del soporte (valla, pantalla, escarapela).</li>
             <li>Textos revisados contra el contrato.</li>
           </ul>
-          <p className="text-xs text-stone-500 mt-2">Lista de referencia para el equipo; no se valida sola.</p>
         </Card>
       </div>
       {adding && <NewAssetModal s={s} onClose={() => setAdding(false)} />}
@@ -276,7 +275,6 @@ function Contract({ s }) {
         <Check ok={contractDocs.length > 0} label="Contrato subido" />
         <Check ok={s.contract_status !== 'No iniciado'} label="Enviado al cliente" />
         <Check ok={s.contract_status === 'Firmado'} label="Firmado" />
-        <p className="text-xs text-stone-500 mt-3">El contenido del contrato se revisa a mano; esta lista solo mira los datos cargados.</p>
       </Card>
     </div>
   );
@@ -326,7 +324,7 @@ function Proposal({ s }) {
           </>
         ) : <Empty>Todavía no se envió una propuesta.</Empty>}
         <Button kind="primary" size="sm" Icon={Plus} onClick={() => setAdding(true)}>Nueva versión</Button>
-        <p className="text-xs text-stone-500">El cliente la aprueba o pide cambios desde su portal.</p>
+        <p className="text-xs text-stone-500">El patrocinador la aprueba o pide cambios en su portal.</p>
       </Card>
       <Card className="lg:col-span-7 p-5 sm:p-6">
         <div className="font-display text-lg ink mb-3">Historial</div>
@@ -362,7 +360,7 @@ function Legal({ s }) {
   const [f, setF] = useState(() => Object.fromEntries(LEGAL_FIELDS.map(([k]) => [k, s[k] || ''])));
   const [busy, wrap] = useBusy();
   const save = wrap(async () => {
-    if (f.contact_email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.contact_email.trim())) { notify('Revisa el email del contacto.', 'error'); return; }
+    if (f.contact_email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.contact_email.trim())) { notify('El email del contacto no tiene un formato válido.', 'error'); return; }
     await run(() => supabase.from('sponsors').update(Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v.trim()]))).eq('id', s.id), 'Datos guardados');
   });
   return (
@@ -383,7 +381,6 @@ function Legal({ s }) {
           <div className="flex items-center gap-2 mb-2"><div className="font-display text-lg ink flex-1">Contactos en HubSpot</div><Pill bg="#F1ECDF" color="#6B5F4F">Datos de ejemplo</Pill></div>
           <div className="text-sm text-stone-700">{s.hubspot_contacts} contactos</div>
           <div className="flex flex-wrap gap-1 mt-2">{s.hubspot_segments.map((x) => <Pill key={x} bg="#F1ECDF" color="#6B5F4F">{x}</Pill>)}</div>
-          <div className="mt-3 text-xs text-stone-500 flex items-start gap-1.5"><Info size={12} className="mt-0.5 flex-shrink-0" /> HubSpot no está conectado en este demo.</div>
         </Card>
       </div>
     </div>
@@ -404,7 +401,7 @@ function Post({ s }) {
   });
   return (
     <div className="space-y-4">
-      {s.stage !== 'post' && <div className="text-xs text-stone-600 flex items-start gap-2 px-1"><Info size={14} className="mt-0.5 flex-shrink-0" /> Esta sección se usa cuando el patrocinador pasa a Post-evento. Se puede llenar antes.</div>}
+      {s.stage !== 'post' && <div className="text-xs text-stone-600 flex items-start gap-2 px-1"><Info size={14} className="mt-0.5 flex-shrink-0" /> Se llena después del evento para cerrar el patrocinio.</div>}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <Card className="lg:col-span-6 p-5 sm:p-6 space-y-3">
           <div className="font-display text-lg ink">Resultados</div>
@@ -417,7 +414,7 @@ function Post({ s }) {
         </Card>
         <Card className="lg:col-span-6 p-5 sm:p-6">
           <div className="font-display text-lg ink mb-3">Evidencias</div>
-          <DocumentList sponsor={s} kind="evidencia" folder="evidencia" canUpload uploadLabel="Subir evidencia" empty="Fotos, reportes de alcance y menciones del evento." />
+          <DocumentList sponsor={s} kind="evidencia" folder="evidencia" canUpload uploadLabel="Subir evidencia" empty="Todavía no hay evidencias. Sube fotos, reportes de alcance y menciones del evento." />
         </Card>
       </div>
     </div>
@@ -459,7 +456,7 @@ export default function SponsorDetail({ id, tab: hashTab, setView }) {
                   <div className="min-w-0"><div className="text-sm ink truncate">{p.full_name}</div><div className="text-xs text-stone-500 truncate">{p.kind === 'team' ? 'StartCo' : s.name}{p.title ? ` · ${p.title}` : ''}</div></div>
                 </div>
               ))}
-              <div className="text-xs text-stone-500 border-t cream-border pt-3">El cliente ve todo menos las notas internas. Este demo no envía correos: los mensajes se leen en el portal.</div>
+              <div className="text-xs text-stone-500 border-t cream-border pt-3">El patrocinador ve todos los mensajes menos las notas internas.</div>
             </Card>
           </div>
         )}

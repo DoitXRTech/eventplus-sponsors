@@ -58,8 +58,8 @@ function Login() {
           </div>
         </div>
         <div>
-          <h1 className="font-display text-2xl ink">Entrar</h1>
-          <p className="text-sm text-stone-600 mt-1">Equipo StartCo y patrocinadores usan el mismo acceso; cada quien ve lo suyo.</p>
+          <h1 className="font-display text-2xl ink">Inicia sesión</h1>
+          <p className="text-sm text-stone-600 mt-1">Usa el email y la clave que te dio StartCo.</p>
         </div>
         <Input label="Email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         <Input label="Clave" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
@@ -67,7 +67,7 @@ function Login() {
         <button type="submit" disabled={busy} className="w-full accent-bg text-white rounded-full py-2.5 text-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60">
           {busy && <Loader2 size={14} className="animate-spin" />} Entrar
         </button>
-        <p className="text-xs text-stone-500">Demo: los usuarios los crea el equipo (ver README). Si no tienes acceso, pídelo a StartCo.</p>
+        <p className="text-xs text-stone-500">¿No tienes acceso? Escríbele a tu contacto en StartCo.</p>
       </form>
     </div>
   );
@@ -88,7 +88,7 @@ function Sidebar({ view, setView, open, onClose }) {
     { key: 'pipeline', label: 'Pipeline', Icon: Layers },
     { key: 'sponsors', label: 'Patrocinadores', Icon: Users },
     { key: 'approvals', label: 'Aprobaciones', Icon: ClipboardCheck, badge: pending || null },
-    { key: 'portal', label: 'Portal Cliente', Icon: ExternalLink },
+    { key: 'portal', label: 'Portal del cliente', Icon: ExternalLink },
   ];
   const go = (name) => { setView({ name }); onClose(); };
   return (
@@ -198,14 +198,14 @@ function TeamApp() {
   const fmtRange = ev ? `${new Date(`${ev.start_date}T12:00:00`).toLocaleDateString('es-CO', { day: 'numeric' })} y ${new Date(`${ev.end_date}T12:00:00`).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }).replace('.', '')} · ${ev.city}` : '';
   const titles = {
     dashboard: { title: 'Dashboard', sub: `${ev?.name || 'Evento'} · ${data.sponsors.length} patrocinadores confirmados · ${fmtRange}` },
-    pipeline: { title: 'Pipeline operativo', sub: 'Estado de cada patrocinador en su proceso post-venta' },
+    pipeline: { title: 'Pipeline', sub: 'En qué etapa va cada patrocinador confirmado' },
     sponsors: { title: 'Patrocinadores', sub: 'Todos los patrocinadores y su estado actual' },
     approvals: { title: 'Aprobaciones', sub: 'Piezas esperando la aprobación del cliente y cambios pedidos' },
     settings: { title: 'Configuración', sub: 'Evento, equipo e integraciones' },
   };
   const t = titles[view.name];
   const newBtn = ['sponsors', 'pipeline'].includes(view.name) && (
-    <Button kind="primary" size="sm" Icon={Plus} onClick={() => setNewOpen(true)} className="flex-shrink-0">Nuevo</Button>
+    <Button kind="primary" size="sm" Icon={Plus} onClick={() => setNewOpen(true)} className="flex-shrink-0">Nuevo patrocinador</Button>
   );
   return (
     <div className="flex min-h-dvh font-body" style={{ background: '#F5F2EC' }}>
@@ -238,14 +238,14 @@ function Gate() {
   if (error) return (
     <Centered>
       <h1 className="font-display text-2xl ink">No se pudieron cargar los datos</h1>
-      <p className="text-sm text-stone-600">Revisa la conexión. Si el problema sigue, la base de datos puede no estar instalada todavía (ver README).</p>
+      <p className="text-sm text-stone-600">Revisa tu conexión a internet e intenta de nuevo.</p>
       <div className="flex justify-center gap-2"><Button kind="dark" onClick={reload}>Reintentar</Button><Button onClick={() => supabase.auth.signOut()}>Salir</Button></div>
     </Centered>
   );
   if (!me) return (
     <Centered>
       <h1 className="font-display text-2xl ink">Tu cuenta todavía no tiene acceso</h1>
-      <p className="text-sm text-stone-600">Entraste bien, pero tu usuario no está ligado al equipo StartCo ni a un patrocinador. Pídele a StartCo que te dé acceso.</p>
+      <p className="text-sm text-stone-600">Tu cuenta todavía no está asociada a un patrocinio. Escríbele a tu contacto en StartCo para activarla.</p>
       <Button onClick={() => supabase.auth.signOut()}>Salir</Button>
     </Centered>
   );
@@ -254,6 +254,7 @@ function Gate() {
   if (!sponsor) return (
     <Centered>
       <h1 className="font-display text-2xl ink">No encontramos tu patrocinio</h1>
+      <p className="text-sm text-stone-600">Escríbele a tu contacto en StartCo para revisarlo.</p>
       <Button onClick={() => supabase.auth.signOut()}>Salir</Button>
     </Centered>
   );

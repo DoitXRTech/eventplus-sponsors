@@ -77,12 +77,12 @@ export const ticketCapacity = capacityOf('tickets');
 export const startupCapacity = capacityOf('startups');
 
 export const STAGES = [
-  { key: 'kickoff',    label: 'Kickoff',         color: '#78716C', desc: 'Onboarding inicial, recolección de datos' },
+  { key: 'kickoff',    label: 'Kickoff',         color: '#78716C', desc: 'Datos iniciales del patrocinador' },
   { key: 'contract',   label: 'Contrato',        color: '#7A6E5D', desc: 'Negociación y firma del contrato' },
-  { key: 'production', label: 'Producción',      color: '#8B5A3C', desc: 'Equipo creando piezas y artes' },
-  { key: 'approvals',  label: 'Aprobaciones',    color: '#C93D0C', desc: 'Cliente revisando piezas' },
+  { key: 'production', label: 'Producción',      color: '#8B5A3C', desc: 'El equipo prepara las piezas' },
+  { key: 'approvals',  label: 'Aprobaciones',    color: '#C93D0C', desc: 'El patrocinador revisa las piezas' },
   { key: 'sponsoring', label: 'Apadrinamientos', color: '#2D5A87', desc: 'Confirmando startups apadrinadas' },
-  { key: 'ready',      label: 'Listo p/ evento', color: '#1B4332', desc: 'Todo aprobado, esperando el día' },
+  { key: 'ready',      label: 'Listo para el evento', color: '#1B4332', desc: 'Todo aprobado' },
   { key: 'post',       label: 'Post-evento',     color: '#0F1419', desc: 'Evidencias, NPS y cierre' },
 ];
 

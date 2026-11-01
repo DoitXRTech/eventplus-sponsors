@@ -11,7 +11,7 @@ export default function NewSponsorModal({ onClose, onCreated }) {
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const save = wrap(async () => {
     if (!f.name.trim()) { notify('Escribe el nombre del patrocinador.', 'error'); return; }
-    if (f.contact_email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.contact_email.trim())) { notify('Revisa el email del contacto.', 'error'); return; }
+    if (f.contact_email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.contact_email.trim())) { notify('El email del contacto no tiene un formato válido.', 'error'); return; }
     const row = await run(() => supabase.from('sponsors').insert({
       ...Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v.trim()])),
       event_id: data.event.id, initials: initialsOf(f.name), value_cop: TIER_VALUES[f.tier],
@@ -33,7 +33,6 @@ export default function NewSponsorModal({ onClose, onCreated }) {
         <Input label="Email" type="email" value={f.contact_email} onChange={set('contact_email')} />
         <Input label="Teléfono" value={f.contact_phone} onChange={set('contact_phone')} />
       </div>
-      <p className="text-xs text-stone-500">El acceso al portal del cliente se crea aparte, con el script de usuarios del README.</p>
     </Modal>
   );
 }

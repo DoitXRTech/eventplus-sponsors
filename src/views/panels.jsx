@@ -169,7 +169,7 @@ function AddAttendeeModal({ sponsor, onClose }) {
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const save = wrap(async () => {
     if (!f.name.trim()) { notify('Escribe el nombre.', 'error'); return; }
-    if (!EMAIL_RE.test(f.email.trim())) { notify('Revisa el email: no tiene un formato válido.', 'error'); return; }
+    if (!EMAIL_RE.test(f.email.trim())) { notify('El email no tiene un formato válido.', 'error'); return; }
     const ok = await run(() => supabase.from('attendees').insert({ sponsor_id: sponsor.id, name: f.name.trim(), email: f.email.trim().toLowerCase(), role: f.role.trim(), day: f.day, status: 'invitado' }), `Inscripción agregada: ${f.name.trim()}`);
     if (ok) onClose();
   });
@@ -263,7 +263,7 @@ export function AttendeesPanel({ sponsor, readOnly = false, quiet = false }) {
         {!readOnly && <FileButton size="sm" Icon={Upload} accept=".csv,text/csv" busy={busy} disabled={left === 0} onFile={importCsv}>Importar CSV</FileButton>}
         <Button size="sm" Icon={Download} disabled={!sponsor.attendees.length} onClick={exportCsv}>Exportar</Button>
       </div>
-      {!readOnly && <p className="text-xs text-stone-500">{left === 0 ? 'El paquete ya no tiene cupos libres.' : `Quedan ${left} cupos. El CSV lleva columnas nombre, email, cargo y día; los repetidos se saltan.`}</p>}
+      {!readOnly && <p className="text-xs text-stone-500">{left === 0 ? 'El paquete ya no tiene cupos libres.' : `${left === 1 ? 'Queda 1 cupo' : `Quedan ${left} cupos`}. Para importar, usa un CSV con las columnas nombre, email, cargo y día.`}</p>}
       {list.length === 0 ? <Empty>{sponsor.attendees.length ? 'Nadie coincide con la búsqueda.' : 'Todavía no hay inscritos.'}</Empty> : (
         <div className="rounded-xl border cream-border bg-white divide-y divide-stone-100">
           {list.map((a) => (
