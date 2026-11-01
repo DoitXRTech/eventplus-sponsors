@@ -499,6 +499,8 @@ create policy prospects_team on public.prospects for all to authenticated using 
 revoke all on all tables in schema public from anon;
 grant select, insert, update, delete on all tables in schema public to authenticated;
 grant usage, select on all sequences in schema public to authenticated;
+grant select, insert, update, delete on all tables in schema public to service_role;
+grant usage, select on all sequences in schema public to service_role;
 grant execute on function public.review_asset(uuid, text, text), public.review_proposal(uuid, text, text),
   public.set_sponsor_logo(uuid, text), public.is_team(), public.my_sponsor_id(), public.can_see_sponsor(uuid),
   public.tier_ticket_capacity(text), public.tier_startup_capacity(text) to authenticated;
