@@ -9,3 +9,4 @@ local/gotrue-bin
 *.log
 .DS_Store
 .live-snapshot.json
+.taste-skill/

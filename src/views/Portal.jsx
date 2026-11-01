@@ -58,7 +58,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
   const PROP = { enviada: 'Por revisar', aprobada: 'Aprobada', cambios: 'Cambios pedidos' };
 
   return (
-    <div className="min-h-screen font-body" style={{ background: '#F5F2EC' }}>
+    <div className="min-h-dvh font-body" style={{ background: '#F5F2EC' }}>
       {preview && (
         <div className="ink-bg text-white px-4 sm:px-8 py-2.5 text-xs flex flex-wrap items-center gap-x-3 gap-y-2">
           <Eye size={14} /> <span className="flex-1 min-w-[180px]">Vista previa del portal de {s.name}: así lo ve el cliente. Solo lectura.</span>

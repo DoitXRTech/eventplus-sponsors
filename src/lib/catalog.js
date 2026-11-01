@@ -21,7 +21,7 @@ export const TIER_COLORS = {
   'Serie A': { bg: '#2D5A87', fg: '#FFFFFF', soft: '#D6E2EF' },
   Seed:      { bg: '#8B5A3C', fg: '#FFFFFF', soft: '#EAD9CC' },
   Preseed:   { bg: '#7A6E5D', fg: '#FFFFFF', soft: '#E0DBD0' },
-  Founders:  { bg: '#A8A29E', fg: '#FFFFFF', soft: '#EDEAE5' },
+  Founders:  { bg: '#5F6B7A', fg: '#FFFFFF', soft: '#E3E6EA' },
 };
 
 // "v" = incluido, "x" = no incluido, numero = cantidad
@@ -90,7 +90,7 @@ export const CONTRACT_TYPES = ['StartCo', 'Cliente', 'Mixto'];
 export const CONTRACT_STATUSES = ['No iniciado', 'Enviado', 'En revisión legal', 'Firmado'];
 
 export const ASSET_STATUS = {
-  produccion: { label: 'En producción', bg: '#F1ECDF', fg: '#7A6E5D' },
+  produccion: { label: 'En producción', bg: '#F1ECDF', fg: '#6B5F4F' },
   pendiente:  { label: 'Pendiente',     bg: '#FFE4D6', fg: '#B33609' },
   aprobado:   { label: 'Aprobado',      bg: '#D4E5DB', fg: '#1B4332' },
   cambios:    { label: 'Cambios pedidos', bg: '#FDE2E2', fg: '#B42318' },

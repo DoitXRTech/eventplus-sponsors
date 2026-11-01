@@ -29,8 +29,8 @@ export function DocumentList({ sponsor, kind, folder, canUpload, readOnly = fals
           </div>
           {kind === 'legal' && (isTeam ? (
             <button onClick={() => run(() => supabase.from('documents').update({ verified: !d.verified }).eq('id', d.id), d.verified ? 'Documento sin verificar' : 'Documento verificado')}
-              className="inline-flex items-center min-h-[32px]"><Pill bg={d.verified ? '#D4E5DB' : '#F1ECDF'} color={d.verified ? '#1B4332' : '#7A6E5D'}><ShieldCheck size={10} /> {d.verified ? 'Verificado' : 'Marcar verificado'}</Pill></button>
-          ) : <Pill bg={d.verified ? '#D4E5DB' : '#F1ECDF'} color={d.verified ? '#1B4332' : '#7A6E5D'}>{d.verified ? 'Verificado' : 'En revisión'}</Pill>)}
+              className="inline-flex items-center min-h-[32px]"><Pill bg={d.verified ? '#D4E5DB' : '#F1ECDF'} color={d.verified ? '#1B4332' : '#6B5F4F'}><ShieldCheck size={10} /> {d.verified ? 'Verificado' : 'Marcar verificado'}</Pill></button>
+          ) : <Pill bg={d.verified ? '#D4E5DB' : '#F1ECDF'} color={d.verified ? '#1B4332' : '#6B5F4F'}>{d.verified ? 'Verificado' : 'En revisión'}</Pill>)}
           <DownloadButton path={d.file_path} />
           {isTeam && <IconButton Icon={Trash2} label={`Borrar ${d.name}`} onClick={async () => window.confirm(`¿Borrar ${d.name}?`) && await run(() => supabase.from('documents').delete().eq('id', d.id), 'Documento borrado') && removeFile(d.file_path)} />}
         </div>

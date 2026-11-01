@@ -46,7 +46,7 @@ const BTN = {
 };
 export const Button = ({ kind = 'ghost', size = 'md', Icon, children, className = '', busy, disabled, ...rest }) => (
   <button type="button" disabled={disabled || busy}
-    className={`rounded-full font-medium inline-flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed
+    className={`rounded-full font-medium inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
       ${size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'} ${BTN[kind]} ${className}`} {...rest}>
     {busy ? <Loader2 size={size === 'sm' ? 11 : 13} className="animate-spin" /> : Icon && <Icon size={size === 'sm' ? 11 : 13} />}
     {children}
@@ -60,7 +60,7 @@ export const Label = ({ children }) => (
 export const Field = ({ label, value, mono }) => (
   <div className="min-w-0">
     <div className="text-[10px] uppercase tracking-wider text-stone-500 mb-1">{label}</div>
-    <div className={`text-sm ink break-words ${mono ? 'font-mono' : ''}`}>{value || <span className="text-stone-400">Sin dato</span>}</div>
+    <div className={`text-sm ink break-words ${mono ? 'font-mono' : ''}`}>{value || <span className="text-stone-500">Sin dato</span>}</div>
   </div>
 );
 

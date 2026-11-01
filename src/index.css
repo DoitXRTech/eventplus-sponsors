@@ -20,3 +20,13 @@ body, html, #root { font-family: 'Geist', system-ui, sans-serif; background: #F5
 @media (max-width: 639px) {
   input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea { font-size: 16px !important; }
 }
+
+/* Foco de teclado visible en todo control (WCAG 2.4.7, 3:1): varios campos usan outline-none. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible,
+:where(input[type=date]):focus-within { outline: 2px solid #0F1419 !important; outline-offset: 2px; }
+:where(.ink-bg) :where(a, button, input, select, textarea, [tabindex]):focus-visible { outline-color: #F5F2EC !important; }
+
+/* Movimiento reducido: sin transiciones ni animaciones si el sistema lo pide. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

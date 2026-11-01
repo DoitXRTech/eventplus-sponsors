@@ -57,7 +57,7 @@ export function Conversation({ sponsor, readOnly = false, maxHeight = '', quiet 
         {groups.length === 0 && <Empty>Todavía no hay mensajes.</Empty>}
         {groups.map((g) => (
           <div key={g.k}>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-stone-400 text-center mb-3 first-letter:uppercase">{g.k}</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-stone-500 text-center mb-3 first-letter:uppercase">{g.k}</div>
             <div className="space-y-3">
               {g.items.map((c) => {
                 const mine = c.author_id === me.id;
@@ -96,7 +96,7 @@ export function Conversation({ sponsor, readOnly = false, maxHeight = '', quiet 
             placeholder={internal ? 'Nota solo para el equipo StartCo' : 'Escribe un mensaje'} aria-label="Mensaje"
             className="w-full text-sm outline-none resize-y bg-transparent" />
           {file && (
-            <div className="text-xs text-stone-700 flex items-center gap-2 mb-2"><Paperclip size={12} /> {file.name} <span className="text-stone-400">{fmtSize(file.size)}</span>
+            <div className="text-xs text-stone-700 flex items-center gap-2 mb-2"><Paperclip size={12} /> {file.name} <span className="text-stone-500">{fmtSize(file.size)}</span>
               <button className="text-red-700 hover:underline" onClick={() => setFile(null)}>Quitar</button></div>
           )}
           <div className="flex flex-wrap items-center gap-2">
@@ -275,7 +275,7 @@ export function AttendeesPanel({ sponsor, readOnly = false, quiet = false }) {
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto pl-11 sm:pl-0">
               <span className="text-[11px] text-stone-600 flex-1 sm:flex-none">{DAY_LABELS[a.day]}</span>
-              {readOnly ? <Pill bg="#F1ECDF" color="#7A6E5D">{ATTENDEE_STATUS[a.status]}</Pill> : (
+              {readOnly ? <Pill bg="#F1ECDF" color="#6B5F4F">{ATTENDEE_STATUS[a.status]}</Pill> : (
                 <select value={a.status} aria-label={`Estado de ${a.name}`}
                   onChange={(e) => run(() => supabase.from('attendees').update({ status: e.target.value }).eq('id', a.id), 'Estado actualizado')}
                   className="px-2 py-1 text-xs border cream-border rounded-full bg-white outline-none">

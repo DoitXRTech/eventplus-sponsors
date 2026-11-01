@@ -52,7 +52,7 @@ export default function SettingsView() {
           {integrations.map((i) => (
             <div key={i.name} className="flex items-start gap-3">
               <div className="flex-1 min-w-0"><div className="text-sm ink">{i.name}</div><div className="text-[11px] text-stone-500">{i.desc}</div></div>
-              {i.ok ? <Pill bg="#D4E5DB" color="#1B4332"><Check size={10} /> Conectado</Pill> : <Pill bg="#F1ECDF" color="#7A6E5D"><X size={10} /> Sin conectar</Pill>}
+              {i.ok ? <Pill bg="#D4E5DB" color="#1B4332"><Check size={10} /> Conectado</Pill> : <Pill bg="#F1ECDF" color="#6B5F4F"><X size={10} /> Sin conectar</Pill>}
             </div>
           ))}
         </div>

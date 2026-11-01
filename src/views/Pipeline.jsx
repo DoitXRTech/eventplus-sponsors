@@ -43,7 +43,7 @@ export default function PipelineKanban({ setView }) {
                 </div>
                 <div className="space-y-2 min-h-[200px]">
                   {inStage.map((s) => (
-                    <div key={s.id} className="bg-white rounded-xl border cream-border hover:shadow-sm hover:border-stone-300 transition-all">
+                    <div key={s.id} className="bg-white rounded-xl border cream-border hover:shadow-sm hover:border-stone-300 transition-colors">
                       <button onClick={() => setView({ name: 'sponsor', id: s.id })} className="w-full text-left p-3 pb-2">
                         <div className="flex items-center gap-2 mb-2 min-w-0">
                           <SponsorLogo sponsor={s} size="sm" />
@@ -67,7 +67,7 @@ export default function PipelineKanban({ setView }) {
                     </div>
                   ))}
                   {inStage.length === 0 && (
-                    <div className="text-[11px] text-stone-400 text-center py-6 border border-dashed rounded-xl cream-border">Sin patrocinadores</div>
+                    <div className="text-[11px] text-stone-500 text-center py-6 border border-dashed rounded-xl cream-border">Sin patrocinadores</div>
                   )}
                 </div>
               </div>

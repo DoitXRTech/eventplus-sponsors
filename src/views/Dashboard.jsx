@@ -54,8 +54,8 @@ export default function Dashboard({ setView }) {
           </div>
           <div className="font-display text-4xl ink">{pendingApproval}</div>
           <div className="text-sm text-stone-600 mt-1">{pendingApproval === 1 ? 'pieza esperando aprobación' : 'piezas esperando aprobación'}</div>
-          <button onClick={() => setView({ name: 'approvals' })} className="mt-3 min-h-[32px] text-xs accent-text font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
-            Ver bandeja <ArrowRight size={12} />
+          <button onClick={() => setView({ name: 'approvals' })} className="group mt-3 min-h-[32px] text-xs accent-text font-medium inline-flex items-center gap-1">
+            Ver bandeja <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
           </button>
         </Card>
         <Card className="col-span-1 lg:col-span-2 p-6">
@@ -63,7 +63,7 @@ export default function Dashboard({ setView }) {
             <div className="text-[11px] uppercase tracking-[0.2em] text-stone-500">Contratos</div>
             <FileSignature size={18} className="text-stone-700" />
           </div>
-          <div className="font-display text-4xl ink">{S.filter((s) => s.contract_status === 'Firmado').length}<span className="text-xl text-stone-400">/{S.length}</span></div>
+          <div className="font-display text-4xl ink">{S.filter((s) => s.contract_status === 'Firmado').length}<span className="text-xl text-stone-500">/{S.length}</span></div>
           <div className="text-sm text-stone-600 mt-1">firmados</div>
         </Card>
         <Card className="col-span-1 lg:col-span-2 p-6">
@@ -89,7 +89,7 @@ export default function Dashboard({ setView }) {
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
                 {atRisk.map((s) => (
                   <button key={s.id} onClick={() => setView({ name: 'sponsor', id: s.id })}
-                    className="text-left bg-white rounded-lg border cream-border p-3 hover:shadow-sm hover:border-stone-300 transition-all">
+                    className="text-left bg-white rounded-lg border cream-border p-3 hover:shadow-sm hover:border-stone-300 transition-colors">
                     <div className="flex items-center gap-2 mb-2">
                       <SponsorLogo sponsor={s} size="sm" />
                       <div className="flex-1 min-w-0">
@@ -133,7 +133,7 @@ export default function Dashboard({ setView }) {
                   </div>
                 </div>
                 <div className="col-span-4 sm:col-span-7 h-8 bg-stone-100 rounded-md overflow-hidden">
-                  <div className="h-full transition-all rounded-md flex items-center px-3"
+                  <div className="h-full rounded-md flex items-center px-3"
                     style={{ width: `${(f.count / maxCount) * 100}%`, minWidth: f.count > 0 ? '32px' : '0', background: f.stage.color }}>
                     {f.count > 0 && <span className="text-xs font-semibold text-white">{f.count}</span>}
                   </div>
@@ -174,7 +174,7 @@ export default function Dashboard({ setView }) {
         <Card className="lg:col-span-4 p-5 sm:p-7">
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="font-display text-xl ink">Prospectos</div>
-            <Pill bg="#F1ECDF" color="#7A6E5D">Datos de ejemplo</Pill>
+            <Pill bg="#F1ECDF" color="#6B5F4F">Datos de ejemplo</Pill>
           </div>
           <div className="text-sm text-stone-600 mb-5">{data.prospects.length} en negociación (el pipeline de ventas vive en HubSpot)</div>
           <div className="space-y-2">
@@ -188,7 +188,7 @@ export default function Dashboard({ setView }) {
                   <div className="text-sm font-medium ink truncate">{p.name}</div>
                   <div className="text-[11px] text-stone-500 truncate">{p.contact} · {daysSince(p.stage_since)} d</div>
                 </div>
-                <Pill bg="#F1ECDF" color="#7A6E5D">{p.stage}</Pill>
+                <Pill bg="#F1ECDF" color="#6B5F4F">{p.stage}</Pill>
               </div>
             ))}
           </div>
@@ -204,7 +204,7 @@ export default function Dashboard({ setView }) {
               const c = TIER_COLORS[t];
               return (
                 <div key={t} className="rounded-xl p-4 border cream-border" style={{ background: c.soft }}>
-                  <div className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: c.bg }}>{t}</div>
+                  <div className="text-[10px] uppercase tracking-wider font-semibold ink">{t}</div>
                   <div className="font-display text-3xl ink mt-2">{arr.length}</div>
                   <div className="text-[11px] text-stone-700 mt-1 font-mono">{fmtCOP(arr.reduce((a, b) => a + Number(b.value_cop), 0))}</div>
                 </div>

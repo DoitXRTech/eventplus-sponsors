@@ -48,7 +48,7 @@ function Login() {
     if (err) setError(/invalid/i.test(err.message) ? 'Email o clave incorrectos.' : 'No se pudo entrar. Intenta de nuevo.');
   };
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 font-body" style={{ background: '#F5F2EC' }}>
+    <div className="min-h-dvh flex items-center justify-center p-4 font-body" style={{ background: '#F5F2EC' }}>
       <form onSubmit={submit} className="w-full max-w-sm bg-white rounded-2xl border cream-border p-6 sm:p-8 space-y-4">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 accent-bg rounded-md flex items-center justify-center"><Sparkles size={16} className="text-white" strokeWidth={2.4} /></div>
@@ -74,7 +74,7 @@ function Login() {
 }
 
 const Centered = ({ children }) => (
-  <div className="min-h-screen flex items-center justify-center p-6 font-body text-center" style={{ background: '#F5F2EC' }}>
+  <div className="min-h-dvh flex items-center justify-center p-6 font-body text-center" style={{ background: '#F5F2EC' }}>
     <div className="max-w-md space-y-3">{children}</div>
   </div>
 );
@@ -94,7 +94,7 @@ function Sidebar({ view, setView, open, onClose }) {
   return (
     <>
       {open && <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={onClose} />}
-      <aside className={`w-64 lg:w-60 ink-bg text-stone-200 flex flex-col h-screen fixed lg:sticky top-0 left-0 z-50 lg:z-auto transition-transform
+      <aside className={`w-64 lg:w-60 ink-bg text-stone-200 flex flex-col h-dvh fixed lg:sticky top-0 left-0 z-50 lg:z-auto transition-transform
         ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
         <div className="px-5 pt-6 pb-4 border-b border-white/5 flex items-center gap-2">
           <div className="w-8 h-8 accent-bg rounded-md flex items-center justify-center"><Sparkles size={16} className="text-white" strokeWidth={2.4} /></div>
@@ -107,7 +107,7 @@ function Sidebar({ view, setView, open, onClose }) {
         <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto scrollbar-thin">
           {items.map(({ key, label, Icon, badge }) => (
             <button key={key} onClick={() => go(key)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors
                 ${view.name === key || (key === 'sponsors' && view.name === 'sponsor') ? 'bg-white/10 text-white' : 'text-stone-400 hover:bg-white/5 hover:text-white'}`}>
               <Icon size={16} strokeWidth={1.8} />
               <span className="flex-1 text-left">{label}</span>
@@ -159,7 +159,7 @@ function Topbar({ title, subtitle, actions, setView, onMenu }) {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar patrocinador, contacto…" aria-label="Buscar"
               onKeyDown={(e) => { if (e.key === 'Enter' && results[0]) { setView({ name: 'sponsor', id: results[0].id }); setQ(''); } if (e.key === 'Escape') setQ(''); }}
-              className="pl-9 pr-4 py-2 bg-stone-100 rounded-full text-sm w-full md:w-72 outline-none focus:bg-white focus:ring-2 focus:ring-stone-900/10 transition-all" />
+              className="pl-9 pr-4 py-2 bg-stone-100 rounded-full text-sm w-full md:w-72 outline-none focus:bg-white focus:ring-2 focus:ring-stone-900/10 transition-colors" />
             {q.trim() && (
               <div className="absolute right-0 left-0 mt-2 bg-white border cream-border rounded-xl shadow-lg overflow-hidden z-40">
                 {results.length === 0 && <div className="px-4 py-3 text-sm text-stone-500">Sin resultados</div>}
@@ -208,7 +208,7 @@ function TeamApp() {
     <Button kind="primary" size="sm" Icon={Plus} onClick={() => setNewOpen(true)} className="flex-shrink-0">Nuevo</Button>
   );
   return (
-    <div className="flex min-h-screen font-body" style={{ background: '#F5F2EC' }}>
+    <div className="flex min-h-dvh font-body" style={{ background: '#F5F2EC' }}>
       <Sidebar view={view} setView={setView} open={menu} onClose={() => setMenu(false)} />
       <div className="flex-1 min-w-0">
         {t

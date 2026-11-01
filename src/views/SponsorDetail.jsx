@@ -60,7 +60,7 @@ function Header({ s, setView }) {
         {STAGES.map((st, i) => (
           <div key={st.key} className="flex-1 min-w-0">
             <div className="h-1.5 rounded-full" style={{ background: i <= idx ? st.color : '#E7E2D8' }} />
-            <div className={`text-[10px] mt-1.5 truncate hidden sm:block ${i === idx ? 'ink font-medium' : 'text-stone-400'}`}>{st.label}</div>
+            <div className={`text-[10px] mt-1.5 truncate hidden sm:block ${i === idx ? 'ink font-medium' : 'text-stone-500'}`}>{st.label}</div>
           </div>
         ))}
       </div>
@@ -380,9 +380,9 @@ function Legal({ s }) {
           <DocumentList sponsor={s} kind="legal" folder="legal" canUpload empty="El cliente todavía no subió documentos (RUT, cámara de comercio)." />
         </Card>
         <Card className="p-5 sm:p-6">
-          <div className="flex items-center gap-2 mb-2"><div className="font-display text-lg ink flex-1">Contactos en HubSpot</div><Pill bg="#F1ECDF" color="#7A6E5D">Datos de ejemplo</Pill></div>
+          <div className="flex items-center gap-2 mb-2"><div className="font-display text-lg ink flex-1">Contactos en HubSpot</div><Pill bg="#F1ECDF" color="#6B5F4F">Datos de ejemplo</Pill></div>
           <div className="text-sm text-stone-700">{s.hubspot_contacts} contactos</div>
-          <div className="flex flex-wrap gap-1 mt-2">{s.hubspot_segments.map((x) => <Pill key={x} bg="#F1ECDF" color="#7A6E5D">{x}</Pill>)}</div>
+          <div className="flex flex-wrap gap-1 mt-2">{s.hubspot_segments.map((x) => <Pill key={x} bg="#F1ECDF" color="#6B5F4F">{x}</Pill>)}</div>
           <div className="mt-3 text-[11px] text-stone-500 flex items-start gap-1.5"><Info size={12} className="mt-0.5 flex-shrink-0" /> HubSpot no está conectado en este demo.</div>
         </Card>
       </div>
