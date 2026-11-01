@@ -57,7 +57,7 @@ export function Conversation({ sponsor, readOnly = false, maxHeight = '', quiet 
         {groups.length === 0 && <Empty>Todavía no hay mensajes.</Empty>}
         {groups.map((g) => (
           <div key={g.k}>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-stone-500 text-center mb-3 first-letter:uppercase">{g.k}</div>
+            <div className="text-[13px] text-stone-500 text-center mb-3 first-letter:uppercase">{g.k}</div>
             <div className="space-y-3">
               {g.items.map((c) => {
                 const mine = c.author_id === me.id;
@@ -66,13 +66,13 @@ export function Conversation({ sponsor, readOnly = false, maxHeight = '', quiet 
                   <div key={c.id} className={`flex gap-2.5 ${mine ? 'flex-row-reverse' : ''}`}>
                     <Avatar name={c.author_name} size={8} color={startco ? '#0F1419' : '#C93D0C'} />
                     <div className={`max-w-[85%] sm:max-w-[75%] min-w-0 ${mine ? 'items-end text-right' : ''}`}>
-                      <div className="text-[11px] text-stone-500 mb-1">
+                      <div className="text-xs text-stone-500 mb-1">
                         <span className="font-medium text-stone-700">{c.author_name}</span>{c.author_role ? ` · ${c.author_role}` : ''} · {fmtTime(c.created_at)}
                       </div>
                       <div className={`inline-block text-left px-3.5 py-2.5 rounded-2xl text-sm whitespace-pre-wrap break-words
                         ${c.internal ? 'bg-amber-50 border border-amber-200 text-amber-950' : mine ? 'ink-bg text-white' : 'bg-stone-100 text-stone-900'}`}>
-                        {c.internal && <div className="text-[10px] font-semibold uppercase tracking-wider mb-1 inline-flex items-center gap-1"><Lock size={10} /> Nota interna</div>}
-                        {c.context_label && <div className={`text-[10px] mb-1 ${mine && !c.internal ? 'text-stone-300' : 'text-stone-500'}`}>Sobre: {c.context_label}</div>}
+                        {c.internal && <div className="text-xs font-semibold mb-1 inline-flex items-center gap-1"><Lock size={10} /> Nota interna</div>}
+                        {c.context_label && <div className={`text-xs mb-1 ${mine && !c.internal ? 'text-stone-300' : 'text-stone-500'}`}>Sobre: {c.context_label}</div>}
                         <div>{c.body}</div>
                         {c.attachment_path && (
                           <div className={`mt-2 flex items-center gap-2 text-xs rounded-lg px-2 py-1 ${mine && !c.internal ? 'bg-white/10' : 'bg-white'}`}>
@@ -249,7 +249,7 @@ export function AttendeesPanel({ sponsor, readOnly = false, quiet = false }) {
         {[[`${sponsor.inscritos}/${sponsor.ticketCap}`, 'Inscritos'], [d1, dayLabel('d1')], [d2, dayLabel('d2')]].map(([v, l]) => (
           <div key={l} className="rounded-xl border cream-border bg-white p-3 sm:p-4 min-w-0">
             <div className="font-display text-xl sm:text-2xl ink">{v}</div>
-            <div className="text-[11px] text-stone-500 truncate">{l}</div>
+            <div className="text-xs text-stone-500 truncate">{l}</div>
           </div>
         ))}
       </div>
@@ -263,7 +263,7 @@ export function AttendeesPanel({ sponsor, readOnly = false, quiet = false }) {
         {!readOnly && <FileButton size="sm" Icon={Upload} accept=".csv,text/csv" busy={busy} disabled={left === 0} onFile={importCsv}>Importar CSV</FileButton>}
         <Button size="sm" Icon={Download} disabled={!sponsor.attendees.length} onClick={exportCsv}>Exportar</Button>
       </div>
-      {!readOnly && <p className="text-[11px] text-stone-500">{left === 0 ? 'El paquete ya no tiene cupos libres.' : `Quedan ${left} cupos. El CSV lleva columnas nombre, email, cargo y día; los repetidos se saltan.`}</p>}
+      {!readOnly && <p className="text-xs text-stone-500">{left === 0 ? 'El paquete ya no tiene cupos libres.' : `Quedan ${left} cupos. El CSV lleva columnas nombre, email, cargo y día; los repetidos se saltan.`}</p>}
       {list.length === 0 ? <Empty>{sponsor.attendees.length ? 'Nadie coincide con la búsqueda.' : 'Todavía no hay inscritos.'}</Empty> : (
         <div className="rounded-xl border cream-border bg-white divide-y divide-stone-100">
           {list.map((a) => (
@@ -271,10 +271,10 @@ export function AttendeesPanel({ sponsor, readOnly = false, quiet = false }) {
               <Avatar name={a.name} size={8} />
               <div className="flex-1 min-w-[140px]">
                 <div className="text-sm ink truncate">{a.name}</div>
-                <div className="text-[11px] text-stone-500 truncate">{a.email}{a.role ? ` · ${a.role}` : ''}</div>
+                <div className="text-xs text-stone-500 truncate">{a.email}{a.role ? ` · ${a.role}` : ''}</div>
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto pl-11 sm:pl-0">
-              <span className="text-[11px] text-stone-600 flex-1 sm:flex-none">{DAY_LABELS[a.day]}</span>
+              <span className="text-xs text-stone-600 flex-1 sm:flex-none">{DAY_LABELS[a.day]}</span>
               {readOnly ? <Pill bg="#F1ECDF" color="#6B5F4F">{ATTENDEE_STATUS[a.status]}</Pill> : (
                 <select value={a.status} aria-label={`Estado de ${a.name}`}
                   onChange={(e) => run(() => supabase.from('attendees').update({ status: e.target.value }).eq('id', a.id), 'Estado actualizado')}
@@ -311,7 +311,7 @@ export function StartupsPanel({ sponsor, readOnly = false }) {
       <div className="flex items-center gap-2 text-sm text-stone-700"><Trophy size={14} /> {sponsor.startups.length} de {sponsor.startupCap} startups apadrinadas</div>
       {sponsor.startups.map((s) => (
         <div key={s.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border cream-border bg-white">
-          <div className="flex-1 min-w-0"><div className="text-sm ink truncate">{s.name}</div><div className="text-[11px] text-stone-500">{s.sector || 'Sin sector'}</div></div>
+          <div className="flex-1 min-w-0"><div className="text-sm ink truncate">{s.name}</div><div className="text-xs text-stone-500">{s.sector || 'Sin sector'}</div></div>
           {!readOnly && <IconButton Icon={Trash2} label={`Quitar ${s.name}`} onClick={() => window.confirm(`¿Dejar de apadrinar a ${s.name}?`) && run(() => supabase.from('sponsored_startups').delete().eq('id', s.id), `${s.name} ya no está apadrinada`)} />}
         </div>
       ))}
@@ -350,7 +350,7 @@ export function CommitmentsList({ sponsor, canEdit = false, limit }) {
               <Icon size={16} className={`flex-shrink-0 mt-0.5 ${done ? 'text-emerald-700' : 'text-stone-300'}`} />
               <span className="flex-1 min-w-0">
                 <span className={`text-sm ${done ? 'text-stone-500' : 'ink'}`}>{c.name}</span>
-                <span className="block text-[11px] text-stone-500">{c.cat}{typeof c.value === 'number' ? ` · ${c.value} ${c.unit || ''}` : ''}{done ? ` · cumplido el ${fmtDate(sponsor.done[c.key])}` : ''}</span>
+                <span className="block text-xs text-stone-500">{c.cat}{typeof c.value === 'number' ? ` · ${c.value} ${c.unit || ''}` : ''}{done ? ` · cumplido el ${fmtDate(sponsor.done[c.key])}` : ''}</span>
               </span>
             </>
           );

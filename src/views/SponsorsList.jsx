@@ -19,7 +19,7 @@ function TicketBar({ s }) {
       <div className="flex-1 h-1.5 bg-stone-100 rounded-full overflow-hidden">
         <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct < 60 ? '#FF5A1F' : '#1B4332' }} />
       </div>
-      <span className="text-[11px] font-mono text-stone-700 whitespace-nowrap">{s.inscritos}/{s.ticketCap}</span>
+      <span className="text-xs font-mono text-stone-700 whitespace-nowrap">{s.inscritos}/{s.ticketCap}</span>
     </div>
   );
 }
@@ -65,11 +65,11 @@ export default function SponsorsList({ setView }) {
               <SponsorLogo sponsor={s} />
               <div className="flex-1 min-w-0">
                 <div className="font-medium ink truncate">{s.name}</div>
-                <div className="text-[11px] text-stone-500 truncate">{s.contact_name}</div>
+                <div className="text-xs text-stone-500 truncate">{s.contact_name}</div>
               </div>
               <ChevronRight size={16} className="text-stone-400" />
             </div>
-            <div className="flex flex-wrap items-center gap-2 mb-3"><TierPill tier={s.tier} /><StageDot stage={s.stage} /><span className="text-[11px] font-mono text-stone-600 ml-auto">{fmtCOP(s.value_cop)}</span></div>
+            <div className="flex flex-wrap items-center gap-2 mb-3"><TierPill tier={s.tier} /><StageDot stage={s.stage} /><span className="text-xs font-mono text-stone-600 ml-auto">{fmtCOP(s.value_cop)}</span></div>
             <TicketBar s={s} />
             <div className="mt-2">{flags(s)}</div>
           </button>
@@ -80,7 +80,7 @@ export default function SponsorsList({ setView }) {
         <Card className="hidden md:block overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-[10px] uppercase tracking-wider text-stone-500 border-b cream-border">
+              <tr className="text-left text-[13px] text-stone-500 border-b cream-border">
                 <th className="px-5 py-3 font-medium">Patrocinador</th>
                 <th className="px-3 py-3 font-medium">Paquete</th>
                 <th className="px-3 py-3 font-medium">Etapa</th>
@@ -98,7 +98,7 @@ export default function SponsorsList({ setView }) {
                       <SponsorLogo sponsor={s} size="sm" />
                       <div className="min-w-0">
                         <div className="font-medium ink truncate">{s.name}</div>
-                        <div className="text-[11px] text-stone-500 truncate">{s.contact_name}</div>
+                        <div className="text-xs text-stone-500 truncate">{s.contact_name}</div>
                       </div>
                     </div>
                   </td>

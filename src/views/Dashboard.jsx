@@ -38,8 +38,7 @@ export default function Dashboard({ setView }) {
     <div className="px-4 sm:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
       <div className="grid grid-cols-2 lg:grid-cols-12 gap-4">
         <Card className="col-span-2 lg:col-span-5 p-6 sm:p-7 ink-bg text-white relative overflow-hidden">
-          <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full" style={{ background: 'radial-gradient(circle, rgba(255,90,31,0.4), transparent 70%)' }} />
-          <div className="text-[11px] uppercase tracking-[0.2em] text-stone-400 mb-3">Patrocinadores confirmados · {ev?.name}</div>
+          <div className="text-[13px] text-stone-400 mb-3">Patrocinadores confirmados · {ev?.name}</div>
           <div className="font-display text-5xl mb-2">{S.length}</div>
           <div className="text-sm text-stone-300">{inProcess} en proceso operativo · {fmtCOP(totalValue)} en valor total</div>
           <div className="mt-6 flex flex-wrap items-center gap-4 text-xs">
@@ -49,7 +48,7 @@ export default function Dashboard({ setView }) {
         </Card>
         <Card className="col-span-2 sm:col-span-1 lg:col-span-3 p-6">
           <div className="flex items-start justify-between mb-3">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-stone-500">Aprobaciones</div>
+            <div className="text-[13px] text-stone-500">Aprobaciones</div>
             <ClipboardCheck size={18} className="accent-text" />
           </div>
           <div className="font-display text-4xl ink">{pendingApproval}</div>
@@ -60,7 +59,7 @@ export default function Dashboard({ setView }) {
         </Card>
         <Card className="col-span-1 lg:col-span-2 p-6">
           <div className="flex items-start justify-between mb-3">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-stone-500">Contratos</div>
+            <div className="text-[13px] text-stone-500">Contratos</div>
             <FileSignature size={18} className="text-stone-700" />
           </div>
           <div className="font-display text-4xl ink">{S.filter((s) => s.contract_status === 'Firmado').length}<span className="text-xl text-stone-500">/{S.length}</span></div>
@@ -68,7 +67,7 @@ export default function Dashboard({ setView }) {
         </Card>
         <Card className="col-span-1 lg:col-span-2 p-6">
           <div className="flex items-start justify-between mb-3">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-stone-500">Días al evento</div>
+            <div className="text-[13px] text-stone-500">Días al evento</div>
             <Calendar size={18} className="text-stone-700" />
           </div>
           <div className="font-display text-4xl ink">{toEvent === null ? '?' : Math.max(toEvent, 0)}</div>
@@ -79,7 +78,7 @@ export default function Dashboard({ setView }) {
       {atRisk.length > 0 && (
         <Card className="p-5 sm:p-6 border-orange-200 bg-orange-50/30">
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-lg accent-bg items-center justify-center flex-shrink-0 hidden sm:flex"><Ticket size={18} className="text-white" /></div>
+            <Ticket size={20} className="accent-text mt-0.5 flex-shrink-0 hidden sm:block" aria-hidden="true" />
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <div className="font-display text-lg ink">{atRisk.length} {atRisk.length === 1 ? 'patrocinador' : 'patrocinadores'} con cupos por debajo del 60%</div>
@@ -94,14 +93,14 @@ export default function Dashboard({ setView }) {
                       <SponsorLogo sponsor={s} size="sm" />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium ink truncate">{s.name}</div>
-                        <div className="text-[10px] text-stone-500">{s.tier}</div>
+                        <div className="text-xs text-stone-500">{s.tier}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-1.5 bg-stone-100 rounded-full overflow-hidden">
                         <div className="h-full accent-bg rounded-full" style={{ width: `${(s.inscritos / s.ticketCap) * 100}%` }} />
                       </div>
-                      <div className="text-[11px] font-mono text-stone-700">{s.inscritos}/{s.ticketCap}</div>
+                      <div className="text-xs font-mono text-stone-700">{s.inscritos}/{s.ticketCap}</div>
                     </div>
                   </button>
                 ))}
@@ -129,7 +128,7 @@ export default function Dashboard({ setView }) {
                   <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: f.stage.color }} />
                   <div className="min-w-0">
                     <div className="text-sm text-stone-800 truncate">{f.stage.label}</div>
-                    <div className="text-[10px] text-stone-500 hidden sm:block">{f.stage.desc}</div>
+                    <div className="text-xs text-stone-500 hidden sm:block">{f.stage.desc}</div>
                   </div>
                 </div>
                 <div className="col-span-4 sm:col-span-7 h-8 bg-stone-100 rounded-md overflow-hidden">
@@ -140,7 +139,7 @@ export default function Dashboard({ setView }) {
                 </div>
                 <div className="col-span-3 sm:col-span-2 text-right">
                   <div className="text-sm ink font-medium">{f.count} <span className="hidden sm:inline">{f.count === 1 ? 'cliente' : 'clientes'}</span></div>
-                  {f.count > 0 && <div className="text-[10px] text-stone-500">~{f.avgDays} d en etapa</div>}
+                  {f.count > 0 && <div className="text-xs text-stone-500">~{f.avgDays} d en etapa</div>}
                 </div>
               </div>
             ))}
@@ -156,12 +155,10 @@ export default function Dashboard({ setView }) {
               const k = ACTIVITY_ICON[a.kind] || { Icon: CheckCircle2, color: '#7A6E5D' };
               return (
                 <button key={a.id} onClick={() => setView({ name: 'sponsor', id: a.sponsor_id })} className="w-full text-left flex items-start gap-3 group">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${k.color}15` }}>
-                    <k.Icon size={14} style={{ color: k.color }} />
-                  </div>
+                  <k.Icon size={16} className="mt-0.5 flex-shrink-0" style={{ color: k.color }} aria-hidden="true" />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm text-stone-800 group-hover:underline">{a.text}</div>
-                    <div className="text-[11px] text-stone-500 mt-0.5">{ago(a.created_at)}{a.actor_name ? ` · ${a.actor_name}` : ''}{a.internal ? ' · interno' : ''}</div>
+                    <div className="text-xs text-stone-500 mt-0.5">{ago(a.created_at)}{a.actor_name ? ` · ${a.actor_name}` : ''}{a.internal ? ' · interno' : ''}</div>
                   </div>
                 </button>
               );
@@ -180,19 +177,19 @@ export default function Dashboard({ setView }) {
           <div className="space-y-2">
             {data.prospects.map((p) => (
               <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-stone-50">
-                <div className="w-8 h-8 rounded-md text-[10px] font-semibold flex items-center justify-center text-white flex-shrink-0"
+                <div className="w-8 h-8 rounded-md text-xs font-semibold flex items-center justify-center text-white flex-shrink-0"
                   style={{ background: (TIER_COLORS[p.tier] || TIER_COLORS.Founders).bg }}>
                   {p.name.split(' ').map((w) => w[0]).slice(0, 2).join('')}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium ink truncate">{p.name}</div>
-                  <div className="text-[11px] text-stone-500 truncate">{p.contact} · {daysSince(p.stage_since)} d</div>
+                  <div className="text-xs text-stone-500 truncate">{p.contact} · {daysSince(p.stage_since)} d</div>
                 </div>
                 <Pill bg="#F1ECDF" color="#6B5F4F">{p.stage}</Pill>
               </div>
             ))}
           </div>
-          <div className="mt-4 text-[11px] text-stone-500 flex items-start gap-1.5"><Info size={12} className="mt-0.5 flex-shrink-0" /> HubSpot no está conectado en este demo.</div>
+          <div className="mt-4 text-xs text-stone-500 flex items-start gap-1.5"><Info size={12} className="mt-0.5 flex-shrink-0" /> HubSpot no está conectado en este demo.</div>
         </Card>
 
         <Card className="lg:col-span-8 p-5 sm:p-7">
@@ -204,9 +201,9 @@ export default function Dashboard({ setView }) {
               const c = TIER_COLORS[t];
               return (
                 <div key={t} className="rounded-xl p-4 border cream-border" style={{ background: c.soft }}>
-                  <div className="text-[10px] uppercase tracking-wider font-semibold ink">{t}</div>
+                  <div className="text-[13px] font-semibold ink">{t}</div>
                   <div className="font-display text-3xl ink mt-2">{arr.length}</div>
-                  <div className="text-[11px] text-stone-700 mt-1 font-mono">{fmtCOP(arr.reduce((a, b) => a + Number(b.value_cop), 0))}</div>
+                  <div className="text-xs text-stone-700 mt-1 font-mono">{fmtCOP(arr.reduce((a, b) => a + Number(b.value_cop), 0))}</div>
                 </div>
               );
             })}

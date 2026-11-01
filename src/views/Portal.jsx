@@ -13,7 +13,7 @@ function Decision({ onDecide, readOnly, approveLabel = 'Aprobar', approveValue =
   const [asking, setAsking] = useState(false);
   const [note, setNote] = useState('');
   const [busy, wrap] = useBusy();
-  if (readOnly) return <span className="text-[11px] text-stone-500">El cliente decide desde aquí.</span>;
+  if (readOnly) return <span className="text-xs text-stone-500">El cliente decide desde aquí.</span>;
   const decide = wrap(async (d) => { const ok = await onDecide(d, note.trim()); if (ok) { setAsking(false); setNote(''); } });
   if (asking) return (
     <div className="w-full space-y-2">
@@ -70,16 +70,15 @@ export default function ClientPortal({ id, preview = false, setView }) {
       )}
       <header className="bg-white border-b cream-border px-4 sm:px-8 py-3 flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg accent-bg flex items-center justify-center text-white font-display">S</div>
-        <div className="flex-1 min-w-0"><div className="font-display ink leading-tight">StartCo</div><div className="text-[11px] text-stone-500 truncate">Portal de {s.name}</div></div>
+        <div className="flex-1 min-w-0"><div className="font-display ink leading-tight">StartCo</div><div className="text-xs text-stone-500 truncate">Portal de {s.name}</div></div>
         {!preview && <Button size="sm" Icon={LogOut} onClick={() => supabase.auth.signOut()}>Salir</Button>}
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-8 py-6 sm:py-8 space-y-4">
         <Card className="p-6 sm:p-8 ink-bg text-white relative overflow-hidden">
-          <div className="absolute -right-10 -top-10 w-56 h-56 rounded-full" style={{ background: 'radial-gradient(circle, rgba(255,90,31,0.35), transparent 70%)' }} />
           <div className="relative">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-stone-400 mb-2">{ev?.name}</div>
-            <h1 className="font-display text-3xl sm:text-4xl">Hola{firstName ? `, ${firstName}` : ''}</h1>
+            <div className="text-[13px] text-stone-400 mb-2">{ev?.name}</div>
+            <h1 className="font-display text-2xl sm:text-3xl">Hola{firstName ? `, ${firstName}` : ''}</h1>
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-stone-300">
               <TierPill tier={s.tier} size="lg" />
               {ev && <span className="inline-flex items-center gap-1.5"><Calendar size={14} /> {fmtDate(ev.start_date, { day: 'numeric', month: 'long' })} y {fmtDate(ev.end_date, { day: 'numeric', month: 'long' })} · {ev.venue || ev.city}</span>}
@@ -108,7 +107,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
             ['Startups', s.startupCap ? `${s.startups.length} de ${s.startupCap}` : 'No incluye'],
           ].map(([l, v]) => (
             <div key={l} className="bg-white rounded-xl border cream-border p-3 sm:p-4 min-w-0 last:col-span-2 md:last:col-span-1">
-              <div className="text-[10px] uppercase tracking-wider text-stone-500">{l}</div>
+              <div className="text-[13px] text-stone-500">{l}</div>
               <div className="text-sm ink font-medium mt-1 truncate">{v}</div>
             </div>
           ))}
@@ -122,7 +121,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
                   <ImageIcon size={16} className="text-stone-500 flex-shrink-0" />
                   <div className="flex-1 min-w-[150px]">
                     <div className="text-sm ink">{a.name}</div>
-                    <div className="text-[11px] text-stone-500">{a.status === 'pendiente' && a.sent_at ? `Enviada hace ${daysSince(a.sent_at)} d` : a.reviewed_at ? `Revisada el ${fmtDate(a.reviewed_at)}` : ''}</div>
+                    <div className="text-xs text-stone-500">{a.status === 'pendiente' && a.sent_at ? `Enviada hace ${daysSince(a.sent_at)} d` : a.reviewed_at ? `Revisada el ${fmtDate(a.reviewed_at)}` : ''}</div>
                   </div>
                   <Pill bg={ASSET_STATUS[a.status].bg} color={ASSET_STATUS[a.status].fg}>{ASSET_STATUS[a.status].label}</Pill>
                   <DownloadButton path={a.file_path} label="Ver pieza" />
@@ -163,7 +162,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
           <Conversation sponsor={s} readOnly={preview} maxHeight="max-h-[60vh]" quiet />
         </Section>
 
-        <div className="text-center text-[11px] text-stone-500 py-4 inline-flex w-full justify-center items-center gap-1.5"><MessageSquare size={12} /> ¿Dudas? Escríbenos en la conversación.</div>
+        <div className="text-center text-xs text-stone-500 py-4 inline-flex w-full justify-center items-center gap-1.5"><MessageSquare size={12} /> ¿Dudas? Escríbenos en la conversación.</div>
       </main>
     </div>
   );

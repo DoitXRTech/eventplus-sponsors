@@ -33,7 +33,7 @@ export default function NewSponsorModal({ onClose, onCreated }) {
         <Input label="Email" type="email" value={f.contact_email} onChange={set('contact_email')} />
         <Input label="Teléfono" value={f.contact_phone} onChange={set('contact_phone')} />
       </div>
-      <p className="text-[11px] text-stone-500">El acceso al portal del cliente se crea aparte, con el script de usuarios del README.</p>
+      <p className="text-xs text-stone-500">El acceso al portal del cliente se crea aparte, con el script de usuarios del README.</p>
     </Modal>
   );
 }

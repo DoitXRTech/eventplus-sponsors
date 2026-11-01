@@ -27,7 +27,7 @@ export default function ApprovalsView({ setView }) {
         <SponsorLogo sponsor={s} />
         <div className="min-w-0">
           <div className="text-sm font-medium ink truncate">{a.name}</div>
-          <div className="text-[11px] text-stone-500 flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5"><span className="truncate">{s.name}</span> <TierPill tier={s.tier} /></div>
+          <div className="text-xs text-stone-500 flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5"><span className="truncate">{s.name}</span> <TierPill tier={s.tier} /></div>
         </div>
       </button>
       <div className="flex items-center gap-2 flex-wrap sm:justify-end">{children}</div>
@@ -45,7 +45,7 @@ export default function ApprovalsView({ setView }) {
           const d = daysSince(a.sent_at);
           return (
             <Row key={a.id} a={a} s={s}>
-              <span className={`text-[11px] inline-flex items-center gap-1 ${d >= 3 ? 'text-red-700 font-medium' : 'text-stone-600'}`}>
+              <span className={`text-xs inline-flex items-center gap-1 ${d >= 3 ? 'text-red-700 font-medium' : 'text-stone-600'}`}>
                 <Clock size={11} /> {d === 0 ? 'enviada hoy' : `${d} ${d === 1 ? 'día' : 'días'} esperando`}
               </span>
               <DownloadButton path={a.file_path} label="Ver archivo" />
@@ -63,7 +63,7 @@ export default function ApprovalsView({ setView }) {
         {changes.length === 0 ? <div className="p-5"><Empty>Ningún cliente pidió cambios.</Empty></div> : changes.map(({ a, s }) => (
           <div key={a.id}>
             <Row a={a} s={s}>
-              <span className="text-[11px] text-stone-600">{a.reviewed_at ? `pedido el ${fmtDate(a.reviewed_at)}` : ''}</span>
+              <span className="text-xs text-stone-600">{a.reviewed_at ? `pedido el ${fmtDate(a.reviewed_at)}` : ''}</span>
               <Button size="sm" onClick={() => setView({ name: 'sponsor', id: s.id, tab: 'assets' })}>Subir corrección</Button>
             </Row>
             {a.review_note && (

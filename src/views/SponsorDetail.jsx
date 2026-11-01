@@ -25,7 +25,7 @@ const TABS = [
 const Check = ({ ok, label, detail }) => (
   <div className="flex items-start gap-2.5 py-1.5">
     {ok ? <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0 mt-0.5" /> : <Circle size={16} className="text-stone-300 flex-shrink-0 mt-0.5" />}
-    <div className="min-w-0"><div className={`text-sm ${ok ? 'text-stone-500' : 'ink'}`}>{label}</div>{detail && <div className="text-[11px] text-stone-500">{detail}</div>}</div>
+    <div className="min-w-0"><div className={`text-sm ${ok ? 'text-stone-500' : 'ink'}`}>{label}</div>{detail && <div className="text-xs text-stone-500">{detail}</div>}</div>
   </div>
 );
 
@@ -60,11 +60,11 @@ function Header({ s, setView }) {
         {STAGES.map((st, i) => (
           <div key={st.key} className="flex-1 min-w-0">
             <div className="h-1.5 rounded-full" style={{ background: i <= idx ? st.color : '#E7E2D8' }} />
-            <div className={`text-[10px] mt-1.5 truncate hidden sm:block ${i === idx ? 'ink font-medium' : 'text-stone-500'}`}>{st.label}</div>
+            <div className={`text-xs mt-1.5 truncate hidden sm:block ${i === idx ? 'ink font-medium' : 'text-stone-500'}`}>{st.label}</div>
           </div>
         ))}
       </div>
-      <div className="text-[11px] text-stone-500 mt-2 sm:hidden">{STAGES[idx]?.label} · {s.daysInStage} d en etapa</div>
+      <div className="text-xs text-stone-500 mt-2 sm:hidden">{STAGES[idx]?.label} · {s.daysInStage} d en etapa</div>
     </div>
   );
 }
@@ -103,7 +103,7 @@ function Overview({ s, data, go }) {
           <button onClick={() => go('comments')} className="min-h-[32px] px-1 text-xs accent-text font-medium">Ver todo</button></div>
         {last.length === 0 ? <Empty>Todavía no hay mensajes.</Empty> : last.map((c) => (
           <div key={c.id} className="py-2 border-b cream-border last:border-0">
-            <div className="text-[11px] text-stone-500">{c.author_name} · {ago(c.created_at)}{c.internal ? ' · nota interna' : ''}</div>
+            <div className="text-xs text-stone-500">{c.author_name} · {ago(c.created_at)}{c.internal ? ' · nota interna' : ''}</div>
             <div className="text-sm text-stone-800 line-clamp-3">{c.body}</div>
           </div>
         ))}
@@ -117,7 +117,7 @@ function Overview({ s, data, go }) {
               return (
                 <div key={a.id} className="flex items-start gap-2.5">
                   <k.Icon size={14} style={{ color: k.color }} className="mt-0.5 flex-shrink-0" />
-                  <div className="min-w-0"><div className="text-sm text-stone-800">{a.text}</div><div className="text-[11px] text-stone-500">{ago(a.created_at)}{a.actor_name ? ` · ${a.actor_name}` : ''}</div></div>
+                  <div className="min-w-0"><div className="text-sm text-stone-800">{a.text}</div><div className="text-xs text-stone-500">{ago(a.created_at)}{a.actor_name ? ` · ${a.actor_name}` : ''}</div></div>
                 </div>
               );
             })}
@@ -178,7 +178,7 @@ function AssetRow({ a, s }) {
         <ImageIcon size={16} className="text-stone-500 flex-shrink-0" />
         <div className="flex-1 min-w-[150px]">
           <div className="text-sm ink truncate">{a.name}</div>
-          <div className="text-[11px] text-stone-500 truncate">
+          <div className="text-xs text-stone-500 truncate">
             {a.file_name || 'Sin archivo'}
             {a.status === 'pendiente' && a.sent_at && ` · esperando hace ${daysSince(a.sent_at)} d`}
             {a.status === 'aprobado' && a.reviewed_at && ` · aprobada el ${fmtDate(a.reviewed_at)}`}
@@ -209,7 +209,7 @@ export function LogoUploader({ s, readOnly = false }) {
       <SponsorLogo sponsor={s} size="xl" />
       <div className="min-w-0 space-y-2">
         <div className="text-sm ink">{s.logo_path ? 'Logo recibido' : 'Falta el logo'}</div>
-        <div className="text-[11px] text-stone-500">PNG o SVG con fondo transparente, idealmente de 1000 px o más.</div>
+        <div className="text-xs text-stone-500">PNG o SVG con fondo transparente, idealmente de 1000 px o más.</div>
         {!readOnly && <FileButton size="sm" Icon={Upload} busy={busy} accept="image/png,image/svg+xml,image/jpeg,image/webp" onFile={upload}>{s.logo_path ? 'Reemplazar logo' : 'Subir logo'}</FileButton>}
       </div>
     </div>
@@ -238,7 +238,7 @@ function Assets({ s }) {
             <li>Medidas finales del soporte (valla, pantalla, escarapela).</li>
             <li>Textos revisados contra el contrato.</li>
           </ul>
-          <p className="text-[11px] text-stone-500 mt-2">Lista de referencia para el equipo; no se valida sola.</p>
+          <p className="text-xs text-stone-500 mt-2">Lista de referencia para el equipo; no se valida sola.</p>
         </Card>
       </div>
       {adding && <NewAssetModal s={s} onClose={() => setAdding(false)} />}
@@ -276,7 +276,7 @@ function Contract({ s }) {
         <Check ok={contractDocs.length > 0} label="Contrato subido" />
         <Check ok={s.contract_status !== 'No iniciado'} label="Enviado al cliente" />
         <Check ok={s.contract_status === 'Firmado'} label="Firmado" />
-        <p className="text-[11px] text-stone-500 mt-3">El contenido del contrato se revisa a mano; esta lista solo mira los datos cargados.</p>
+        <p className="text-xs text-stone-500 mt-3">El contenido del contrato se revisa a mano; esta lista solo mira los datos cargados.</p>
       </Card>
     </div>
   );
@@ -321,12 +321,12 @@ function Proposal({ s }) {
         {p ? (
           <>
             <div className="flex items-center gap-2 flex-wrap"><span className="font-display text-3xl ink">v{p.version}</span><Pill bg={st[1]} color={st[2]}>{st[0]}</Pill></div>
-            <div className="text-[11px] text-stone-500">Enviada el {fmtDate(p.created_at)}{p.author_name ? ` por ${p.author_name}` : ''}{p.reviewed_at ? ` · revisada el ${fmtDate(p.reviewed_at)}` : ''}</div>
+            <div className="text-xs text-stone-500">Enviada el {fmtDate(p.created_at)}{p.author_name ? ` por ${p.author_name}` : ''}{p.reviewed_at ? ` · revisada el ${fmtDate(p.reviewed_at)}` : ''}</div>
             {p.note && <p className="text-sm text-stone-800 whitespace-pre-wrap">{p.note}</p>}
           </>
         ) : <Empty>Todavía no se envió una propuesta.</Empty>}
         <Button kind="primary" size="sm" Icon={Plus} onClick={() => setAdding(true)}>Nueva versión</Button>
-        <p className="text-[11px] text-stone-500">El cliente la aprueba o pide cambios desde su portal.</p>
+        <p className="text-xs text-stone-500">El cliente la aprueba o pide cambios desde su portal.</p>
       </Card>
       <Card className="lg:col-span-7 p-5 sm:p-6">
         <div className="font-display text-lg ink mb-3">Historial</div>
@@ -336,7 +336,7 @@ function Proposal({ s }) {
               <div key={v.id} className="py-3 flex items-start gap-3">
                 <FileText size={16} className="text-stone-500 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm ink">v{v.version} <span className="text-[11px] text-stone-500">· {fmtDate(v.created_at)}</span></div>
+                  <div className="text-sm ink">v{v.version} <span className="text-xs text-stone-500">· {fmtDate(v.created_at)}</span></div>
                   {v.note && <div className="text-xs text-stone-600 line-clamp-2">{v.note}</div>}
                 </div>
                 <Pill bg={PROPOSAL_STATUS[v.status][1]} color={PROPOSAL_STATUS[v.status][2]}>{PROPOSAL_STATUS[v.status][0]}</Pill>
@@ -383,7 +383,7 @@ function Legal({ s }) {
           <div className="flex items-center gap-2 mb-2"><div className="font-display text-lg ink flex-1">Contactos en HubSpot</div><Pill bg="#F1ECDF" color="#6B5F4F">Datos de ejemplo</Pill></div>
           <div className="text-sm text-stone-700">{s.hubspot_contacts} contactos</div>
           <div className="flex flex-wrap gap-1 mt-2">{s.hubspot_segments.map((x) => <Pill key={x} bg="#F1ECDF" color="#6B5F4F">{x}</Pill>)}</div>
-          <div className="mt-3 text-[11px] text-stone-500 flex items-start gap-1.5"><Info size={12} className="mt-0.5 flex-shrink-0" /> HubSpot no está conectado en este demo.</div>
+          <div className="mt-3 text-xs text-stone-500 flex items-start gap-1.5"><Info size={12} className="mt-0.5 flex-shrink-0" /> HubSpot no está conectado en este demo.</div>
         </Card>
       </div>
     </div>
@@ -441,7 +441,7 @@ export default function SponsorDetail({ id, tab: hashTab, setView }) {
           {TABS.map((t) => (
             <button key={t.key} role="tab" aria-selected={tab === t.key} onClick={() => setTab(t.key)}
               className={`px-3 py-3 text-sm whitespace-nowrap border-b-2 ${tab === t.key ? 'border-[#FF5A1F] ink font-medium' : 'border-transparent text-stone-600 hover:ink'}`}>
-              {t.label}{badge[t.key] ? <span className="ml-1.5 text-[10px] text-stone-500">{badge[t.key]}</span> : null}
+              {t.label}{badge[t.key] ? <span className="ml-1.5 text-xs text-stone-500">{badge[t.key]}</span> : null}
             </button>
           ))}
         </div>
@@ -456,10 +456,10 @@ export default function SponsorDetail({ id, tab: hashTab, setView }) {
               {data.profiles.filter((p) => p.kind === 'team' || p.sponsor_id === s.id).map((p) => (
                 <div key={p.id} className="flex items-center gap-2.5">
                   <span className={`w-2 h-2 rounded-full ${p.kind === 'team' ? 'bg-stone-900' : 'accent-bg'}`} />
-                  <div className="min-w-0"><div className="text-sm ink truncate">{p.full_name}</div><div className="text-[11px] text-stone-500 truncate">{p.kind === 'team' ? 'StartCo' : s.name}{p.title ? ` · ${p.title}` : ''}</div></div>
+                  <div className="min-w-0"><div className="text-sm ink truncate">{p.full_name}</div><div className="text-xs text-stone-500 truncate">{p.kind === 'team' ? 'StartCo' : s.name}{p.title ? ` · ${p.title}` : ''}</div></div>
                 </div>
               ))}
-              <div className="text-[11px] text-stone-500 border-t cream-border pt-3">El cliente ve todo menos las notas internas. Este demo no envía correos: los mensajes se leen en el portal.</div>
+              <div className="text-xs text-stone-500 border-t cream-border pt-3">El cliente ve todo menos las notas internas. Este demo no envía correos: los mensajes se leen en el portal.</div>
             </Card>
           </div>
         )}

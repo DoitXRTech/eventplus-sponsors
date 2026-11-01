@@ -54,7 +54,7 @@ function Login() {
           <div className="w-9 h-9 accent-bg rounded-md flex items-center justify-center"><Sparkles size={16} className="text-white" strokeWidth={2.4} /></div>
           <div>
             <div className="font-display text-xl leading-tight ink">StartCo</div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-stone-500">Patrocinios 2026</div>
+            <div className="text-[13px] text-stone-500">Patrocinios 2026</div>
           </div>
         </div>
         <div>
@@ -67,7 +67,7 @@ function Login() {
         <button type="submit" disabled={busy} className="w-full accent-bg text-white rounded-full py-2.5 text-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60">
           {busy && <Loader2 size={14} className="animate-spin" />} Entrar
         </button>
-        <p className="text-[11px] text-stone-500">Demo: los usuarios los crea el equipo (ver README). Si no tienes acceso, pídelo a StartCo.</p>
+        <p className="text-xs text-stone-500">Demo: los usuarios los crea el equipo (ver README). Si no tienes acceso, pídelo a StartCo.</p>
       </form>
     </div>
   );
@@ -100,7 +100,7 @@ function Sidebar({ view, setView, open, onClose }) {
           <div className="w-8 h-8 accent-bg rounded-md flex items-center justify-center"><Sparkles size={16} className="text-white" strokeWidth={2.4} /></div>
           <div className="flex-1">
             <div className="font-display text-lg leading-tight text-white">StartCo</div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-stone-400">Patrocinios 2026</div>
+            <div className="text-[13px] text-stone-400">Patrocinios 2026</div>
           </div>
           <button className="lg:hidden text-stone-400 hover:text-white p-1" onClick={onClose} aria-label="Cerrar menú"><X size={18} /></button>
         </div>
@@ -111,7 +111,7 @@ function Sidebar({ view, setView, open, onClose }) {
                 ${view.name === key || (key === 'sponsors' && view.name === 'sponsor') ? 'bg-white/10 text-white' : 'text-stone-400 hover:bg-white/5 hover:text-white'}`}>
               <Icon size={16} strokeWidth={1.8} />
               <span className="flex-1 text-left">{label}</span>
-              {badge && <span className="text-[10px] accent-bg text-white px-1.5 rounded-full font-semibold min-w-[18px] text-center">{badge}</span>}
+              {badge && <span className="text-xs accent-bg text-white px-1.5 rounded-full font-semibold min-w-[18px] text-center">{badge}</span>}
             </button>
           ))}
           <button onClick={() => go('settings')}
@@ -121,12 +121,12 @@ function Sidebar({ view, setView, open, onClose }) {
         </nav>
         <div className="border-t border-white/5 p-3">
           <div className="flex items-center gap-2.5 px-2 py-1.5">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-rose-600 flex items-center justify-center text-white text-xs font-semibold">
+            <div className="w-8 h-8 rounded-full accent-bg flex items-center justify-center text-white text-xs font-semibold">
               {me.full_name.split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm text-white truncate">{me.full_name}</div>
-              <div className="text-[11px] text-stone-400 truncate">{me.title}</div>
+              <div className="text-xs text-stone-400 truncate">{me.title}</div>
             </div>
             <button onClick={() => supabase.auth.signOut()} title="Salir" aria-label="Salir"
               className="w-8 h-8 rounded-full hover:bg-white/10 inline-flex items-center justify-center"><LogOut size={16} className="text-stone-300" /></button>
@@ -169,7 +169,7 @@ function Topbar({ title, subtitle, actions, setView, onMenu }) {
                     <SponsorLogo sponsor={s} size="sm" />
                     <div className="min-w-0">
                       <div className="text-sm ink truncate">{s.name}</div>
-                      <div className="text-[11px] text-stone-500 truncate">{s.contact_name} · {s.tier}</div>
+                      <div className="text-xs text-stone-500 truncate">{s.contact_name} · {s.tier}</div>
                     </div>
                   </button>
                 ))}

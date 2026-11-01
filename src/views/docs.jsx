@@ -25,7 +25,7 @@ export function DocumentList({ sponsor, kind, folder, canUpload, readOnly = fals
           <FileText size={16} className="text-stone-500 flex-shrink-0" />
           <div className="flex-1 min-w-[140px]">
             <div className="text-sm ink truncate">{d.name}</div>
-            <div className="text-[11px] text-stone-500">{fmtDate(d.created_at)}{d.size_bytes ? ` · ${fmtSize(d.size_bytes)}` : ''}</div>
+            <div className="text-xs text-stone-500">{fmtDate(d.created_at)}{d.size_bytes ? ` · ${fmtSize(d.size_bytes)}` : ''}</div>
           </div>
           {kind === 'legal' && (isTeam ? (
             <button onClick={() => run(() => supabase.from('documents').update({ verified: !d.verified }).eq('id', d.id), d.verified ? 'Documento sin verificar' : 'Documento verificado')}

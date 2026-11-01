@@ -40,18 +40,18 @@ export default function SettingsView() {
           {team.map((p) => (
             <div key={p.id} className="flex items-center gap-3">
               <Avatar name={p.full_name} color="#0F1419" />
-              <div className="min-w-0"><div className="text-sm ink truncate">{p.full_name}</div><div className="text-[11px] text-stone-500 truncate">{p.title}</div></div>
+              <div className="min-w-0"><div className="text-sm ink truncate">{p.full_name}</div><div className="text-xs text-stone-500 truncate">{p.title}</div></div>
             </div>
           ))}
         </div>
-        <p className="text-[11px] text-stone-500 mt-4">Las cuentas nuevas (equipo o cliente) se crean con <code className="font-mono">npm run users</code>, como explica el README.</p>
+        <p className="text-xs text-stone-500 mt-4">Las cuentas nuevas (equipo o cliente) se crean con <code className="font-mono">npm run users</code>, como explica el README.</p>
       </Card>
       <Card className="p-5 sm:p-6">
         <div className="font-display text-lg ink mb-3">Integraciones</div>
         <div className="space-y-3">
           {integrations.map((i) => (
             <div key={i.name} className="flex items-start gap-3">
-              <div className="flex-1 min-w-0"><div className="text-sm ink">{i.name}</div><div className="text-[11px] text-stone-500">{i.desc}</div></div>
+              <div className="flex-1 min-w-0"><div className="text-sm ink">{i.name}</div><div className="text-xs text-stone-500">{i.desc}</div></div>
               {i.ok ? <Pill bg="#D4E5DB" color="#1B4332"><Check size={10} /> Conectado</Pill> : <Pill bg="#F1ECDF" color="#6B5F4F"><X size={10} /> Sin conectar</Pill>}
             </div>
           ))}

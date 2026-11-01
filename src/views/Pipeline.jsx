@@ -39,7 +39,7 @@ export default function PipelineKanban({ setView }) {
                     <span className="font-display text-sm ink">{stage.label}</span>
                     <span className="text-xs text-stone-500">· {inStage.length}</span>
                   </div>
-                  <span className="text-[10px] font-mono text-stone-500">{fmtCOP(inStage.reduce((a, b) => a + Number(b.value_cop), 0))}</span>
+                  <span className="text-xs font-mono text-stone-500">{fmtCOP(inStage.reduce((a, b) => a + Number(b.value_cop), 0))}</span>
                 </div>
                 <div className="space-y-2 min-h-[200px]">
                   {inStage.map((s) => (
@@ -49,12 +49,12 @@ export default function PipelineKanban({ setView }) {
                           <SponsorLogo sponsor={s} size="sm" />
                           <div className="font-medium text-sm ink truncate">{s.name}</div>
                         </div>
-                        <div className="flex items-center justify-between text-[11px] text-stone-600">
+                        <div className="flex items-center justify-between text-xs text-stone-600">
                           <TierPill tier={s.tier} />
                           <span className="font-mono">{fmtCOP(s.value_cop)}</span>
                         </div>
                       </button>
-                      <div className="mx-3 py-2 border-t cream-border flex items-center justify-between text-[11px] text-stone-500">
+                      <div className="mx-3 py-2 border-t cream-border flex items-center justify-between text-xs text-stone-500">
                         <span className="inline-flex items-center gap-1"><Clock size={10} /> {s.daysInStage} d en etapa</span>
                         <span className="inline-flex items-center gap-1">
                           {s.pendingApprovals > 0 && <span className="inline-flex items-center gap-1 accent-text font-medium mr-1"><AlertCircle size={10} /> {s.pendingApprovals}</span>}
@@ -67,7 +67,7 @@ export default function PipelineKanban({ setView }) {
                     </div>
                   ))}
                   {inStage.length === 0 && (
-                    <div className="text-[11px] text-stone-500 text-center py-6 border border-dashed rounded-xl cream-border">Sin patrocinadores</div>
+                    <div className="text-xs text-stone-500 text-center py-6 border border-dashed rounded-xl cream-border">Sin patrocinadores</div>
                   )}
                 </div>
               </div>

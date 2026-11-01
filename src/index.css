@@ -2,10 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-.font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; letter-spacing: -0.02em; }
-.font-body { font-family: 'Geist', system-ui, sans-serif; }
-.font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
-body, html, #root { font-family: 'Geist', system-ui, sans-serif; background: #F5F2EC; }
+.font-display { font-family: 'Fraunces Variable', Georgia, serif; font-optical-sizing: auto; letter-spacing: -0.02em; }
+.font-body { font-family: 'Geist Variable', system-ui, sans-serif; }
+/* Cifras con ancho fijo en la misma Geist (antes JetBrains Mono, una tercera familia). */
+.font-mono { font-family: inherit; font-variant-numeric: tabular-nums; }
+code.font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+body, html, #root { font-family: 'Geist Variable', system-ui, sans-serif; background: #F5F2EC; font-variant-numeric: tabular-nums; }
 .accent-bg { background: #C93D0C; }
 .accent-text { color: #C93D0C; }
 .ink { color: #0F1419; }

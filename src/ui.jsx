@@ -4,15 +4,15 @@ import { TIER_COLORS, STAGES, initialsOf } from './lib/catalog.js';
 import { useStore, useSignedUrl, signedUrl, hasFile } from './lib/store.jsx';
 
 export const Pill = ({ children, color = '#0F1419', bg = '#E4E0D7', className = '' }) => (
-  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap ${className}`}
+  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${className}`}
     style={{ color, background: bg }}>{children}</span>
 );
 
 export const TierPill = ({ tier, size = 'sm' }) => {
   const c = TIER_COLORS[tier] || TIER_COLORS.Founders;
-  const sz = size === 'lg' ? 'px-3 py-1 text-xs' : 'px-2 py-0.5 text-[10px]';
+  const sz = size === 'lg' ? 'px-3 py-1 text-sm' : 'px-2 py-0.5 text-xs';
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full font-semibold uppercase tracking-wider whitespace-nowrap ${sz}`}
+    <span className={`inline-flex items-center gap-1 rounded-full font-semibold whitespace-nowrap ${sz}`}
       style={{ background: c.bg, color: c.fg }}>{tier}</span>
   );
 };
@@ -22,7 +22,7 @@ export const StageDot = ({ stage }) => {
   return (
     <span className="inline-flex items-center gap-1.5">
       <span className="w-1.5 h-1.5 rounded-full" style={{ background: s?.color }} />
-      <span className="text-[11px] text-stone-600">{s?.label}</span>
+      <span className="text-xs text-stone-600">{s?.label}</span>
     </span>
   );
 };
@@ -54,12 +54,12 @@ export const Button = ({ kind = 'ghost', size = 'md', Icon, children, className 
 );
 
 export const Label = ({ children }) => (
-  <div className="text-[10px] uppercase tracking-[0.18em] text-stone-500">{children}</div>
+  <div className="text-[13px] text-stone-500">{children}</div>
 );
 
 export const Field = ({ label, value, mono }) => (
   <div className="min-w-0">
-    <div className="text-[10px] uppercase tracking-wider text-stone-500 mb-1">{label}</div>
+    <div className="text-[13px] text-stone-500 mb-1">{label}</div>
     <div className={`text-sm ink break-words ${mono ? 'font-mono' : ''}`}>{value || <span className="text-stone-500">Sin dato</span>}</div>
   </div>
 );
@@ -73,14 +73,14 @@ export const Stat = ({ label, value }) => (
 
 export const Input = ({ label, className = '', ...rest }) => (
   <label className={`block ${className}`}>
-    {label && <span className="block text-[11px] font-medium text-stone-600 mb-1">{label}</span>}
+    {label && <span className="block text-xs font-medium text-stone-600 mb-1">{label}</span>}
     <input className="w-full px-3 py-2 bg-white border cream-border rounded-lg text-sm outline-none focus:border-stone-400" {...rest} />
   </label>
 );
 
 export const Select = ({ label, options, className = '', ...rest }) => (
   <label className={`block ${className}`}>
-    {label && <span className="block text-[11px] font-medium text-stone-600 mb-1">{label}</span>}
+    {label && <span className="block text-xs font-medium text-stone-600 mb-1">{label}</span>}
     <select className="w-full px-3 py-2 bg-white border cream-border rounded-lg text-sm outline-none focus:border-stone-400" {...rest}>
       {options.map((o) => (typeof o === 'string' ? <option key={o} value={o}>{o}</option> : <option key={o.value} value={o.value}>{o.label}</option>))}
     </select>
@@ -89,7 +89,7 @@ export const Select = ({ label, options, className = '', ...rest }) => (
 
 export const Textarea = ({ label, className = '', ...rest }) => (
   <label className={`block ${className}`}>
-    {label && <span className="block text-[11px] font-medium text-stone-600 mb-1">{label}</span>}
+    {label && <span className="block text-xs font-medium text-stone-600 mb-1">{label}</span>}
     <textarea className="w-full px-3 py-2 bg-white border cream-border rounded-lg text-sm outline-none focus:border-stone-400 resize-y" rows={3} {...rest} />
   </label>
 );
@@ -130,14 +130,14 @@ export function Toast() {
 
 const AV = { 7: 'w-7 h-7', 8: 'w-8 h-8', 9: 'w-9 h-9', 10: 'w-10 h-10' };
 export const Avatar = ({ name, size = 8, color, className = '' }) => (
-  <div className={`${AV[size]} rounded-full flex items-center justify-center text-[10px] font-semibold flex-shrink-0 ${color ? 'text-white' : 'bg-stone-200 text-stone-700'} ${className}`}
+  <div className={`${AV[size]} rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${color ? 'text-white' : 'bg-stone-200 text-stone-700'} ${className}`}
     style={color ? { background: color } : {}}>{initialsOf(name)}</div>
 );
 
 // Logo del patrocinador: el archivo real si lo hay, si no las iniciales con el color del tier.
 export function SponsorLogo({ sponsor, size = 'md' }) {
   const url = useSignedUrl(sponsor.logo_path);
-  const dims = { sm: 'w-7 h-7 text-[10px] rounded-md', md: 'w-9 h-9 text-xs rounded-md', lg: 'w-12 h-12 text-sm rounded-lg', xl: 'w-16 h-16 text-lg rounded-xl' }[size];
+  const dims = { sm: 'w-7 h-7 text-xs rounded-md', md: 'w-9 h-9 text-xs rounded-md', lg: 'w-12 h-12 text-sm rounded-lg', xl: 'w-16 h-16 text-lg rounded-xl' }[size];
   if (url) return <img src={url} alt={`Logo de ${sponsor.name}`} className={`${dims} object-contain bg-white border cream-border flex-shrink-0`} />;
   return (
     <div className={`${dims} font-semibold flex items-center justify-center text-white flex-shrink-0`}
