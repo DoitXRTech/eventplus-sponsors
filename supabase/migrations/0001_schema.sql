@@ -405,7 +405,7 @@ create or replace function public.set_sponsor_logo(p_sponsor uuid, p_path text)
 returns void language plpgsql security definer set search_path = public as $$
 begin
   if not public.can_see_sponsor(p_sponsor) then raise exception 'NO_AUTORIZADO' using errcode = '42501'; end if;
-  if p_path is null or split_part(p_path, '/', 1) <> p_sponsor::text then
+  if p_path is null or split_part(p_path, '/', 1) <> p_sponsor::text or split_part(p_path, '/', 2) <> 'logo' then
     raise exception 'RUTA_INVALIDA' using errcode = '22023';
   end if;
   update public.sponsors set logo_path = p_path where id = p_sponsor;

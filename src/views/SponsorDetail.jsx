@@ -3,7 +3,7 @@ import {
   ArrowLeft, ExternalLink, CheckCircle2, Circle, MessageSquare, Upload, Send, Trash2, Plus, FileText, Image as ImageIcon, Info, ChevronRight,
 } from 'lucide-react';
 import { STAGES, CONTRACT_TYPES, CONTRACT_STATUSES, ASSET_STATUS, fmtCOPfull } from '../lib/catalog.js';
-import { useStore, uploadFile, daysSince, daysUntil, fmtDate, ago, humanError } from '../lib/store.jsx';
+import { useStore, uploadFile, removeFile, daysSince, daysUntil, fmtDate, ago, humanError } from '../lib/store.jsx';
 import { supabase } from '../lib/supabase.js';
 import { Card, Pill, TierPill, SponsorLogo, Button, Input, Select, Textarea, Modal, FileButton, DownloadButton, IconButton, Field, Label, Empty, useBusy } from '../ui.jsx';
 import { Conversation, AttendeesPanel, StartupsPanel, CommitmentsList } from './panels.jsx';
@@ -188,7 +188,7 @@ function AssetRow({ a, s }) {
         <DownloadButton path={a.file_path} />
         {a.status === 'produccion' && <Button size="sm" Icon={Send} onClick={send}>Enviar a aprobación</Button>}
         {(a.status === 'produccion' || a.status === 'cambios') && <FileButton size="sm" Icon={Upload} busy={busy} onFile={resubmit}>{a.status === 'cambios' ? 'Subir corrección' : 'Subir archivo'}</FileButton>}
-        {a.status === 'produccion' && <IconButton Icon={Trash2} label={`Borrar ${a.name}`} onClick={() => window.confirm(`¿Borrar la pieza ${a.name}?`) && run(() => supabase.from('assets').delete().eq('id', a.id), 'Pieza borrada')} />}
+        {a.status === 'produccion' && <IconButton Icon={Trash2} label={`Borrar ${a.name}`} onClick={async () => window.confirm(`¿Borrar la pieza ${a.name}?`) && await run(() => supabase.from('assets').delete().eq('id', a.id), 'Pieza borrada') && removeFile(a.file_path)} />}
       </div>
       {a.status === 'cambios' && a.review_note && <div className="mt-2 ml-7 px-3 py-2 rounded-lg bg-red-50 text-xs text-red-900">Cambios pedidos: {a.review_note}</div>}
     </div>

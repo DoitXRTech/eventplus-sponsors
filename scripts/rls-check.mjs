@@ -39,7 +39,7 @@ const { data: { user: teamUser } } = await team.auth.getUser();
 
 {
   const { data } = await team.from('sponsors').select('id');
-  check('equipo ve los 7 patrocinadores', data?.length === 7, `${data?.length}`);
+  check('equipo ve los 7 patrocinadores de ejemplo', SPONSORS.every((x) => data?.some((d) => d.id === x.id)), `${data?.length}`);
   const { data: mine } = await bc.from('sponsors').select('id');
   check('Bancolombia ve solo su patrocinio', mine?.length === 1 && mine[0].id === BC);
   const { data: att } = await bc.from('attendees').select('sponsor_id');
@@ -119,6 +119,14 @@ const { data: { user: teamUser } } = await team.auth.getUser();
   check('patrocinador sube documento legal', !legal.error, legal.error?.message);
   const logo = await bc.rpc('set_sponsor_logo', { p_sponsor: GEB, p_path: `${GEB}/logo/x.png` });
   check('patrocinador no cambia el logo de otro', !!logo.error);
+  const crossPath = await bc.from('documents').insert({ sponsor_id: BC, kind: 'legal', name: 'ajeno.pdf', file_path: `${GEB}/contrato/x.pdf` });
+  check('un documento no apunta al archivo de otro patrocinador', !!crossPath.error);
+  const wrongFolder = await bc.from('documents').insert({ sponsor_id: BC, kind: 'legal', name: 'raro.pdf', file_path: `${BC}/contrato/x.pdf` });
+  check('un documento no apunta a otra carpeta', !!wrongFolder.error);
+  const logoFolder = await bc.rpc('set_sponsor_logo', { p_sponsor: BC, p_path: `${BC}/legal/x.png` });
+  check('el logo solo sale de la carpeta logo', !!logoFolder.error);
+  const teamCross = await team.from('assets').insert({ sponsor_id: BC, name: 'cruzada', file_path: `${GEB}/piezas/x.png` });
+  check('ni el equipo cruza archivos entre patrocinadores', !!teamCross.error);
 }
 
 {

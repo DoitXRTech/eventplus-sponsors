@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileText, Upload, Trash2, ShieldCheck } from 'lucide-react';
-import { useStore, uploadFile, fmtSize, fmtDate, humanError } from '../lib/store.jsx';
+import { useStore, uploadFile, removeFile, fmtSize, fmtDate, humanError } from '../lib/store.jsx';
 import { supabase } from '../lib/supabase.js';
 import { Pill, FileButton, DownloadButton, IconButton, Empty, useBusy } from '../ui.jsx';
 
@@ -32,7 +32,7 @@ export function DocumentList({ sponsor, kind, folder, canUpload, readOnly = fals
               className="inline-flex"><Pill bg={d.verified ? '#D4E5DB' : '#F1ECDF'} color={d.verified ? '#1B4332' : '#7A6E5D'}><ShieldCheck size={10} /> {d.verified ? 'Verificado' : 'Marcar verificado'}</Pill></button>
           ) : <Pill bg={d.verified ? '#D4E5DB' : '#F1ECDF'} color={d.verified ? '#1B4332' : '#7A6E5D'}>{d.verified ? 'Verificado' : 'En revisión'}</Pill>)}
           <DownloadButton path={d.file_path} />
-          {isTeam && <IconButton Icon={Trash2} label={`Borrar ${d.name}`} onClick={() => window.confirm(`¿Borrar ${d.name}?`) && run(() => supabase.from('documents').delete().eq('id', d.id), 'Documento borrado')} />}
+          {isTeam && <IconButton Icon={Trash2} label={`Borrar ${d.name}`} onClick={async () => window.confirm(`¿Borrar ${d.name}?`) && await run(() => supabase.from('documents').delete().eq('id', d.id), 'Documento borrado') && removeFile(d.file_path)} />}
         </div>
       ))}
       {canUpload && !readOnly && <FileButton size="sm" Icon={Upload} busy={busy} accept={accept} onFile={upload}>{uploadLabel}</FileButton>}

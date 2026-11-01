@@ -28,6 +28,21 @@ async function login(browser, email, w = 1280) {
   return { ctx, page };
 }
 const toast = async (page) => { await page.waitForTimeout(1200); return (await page.locator('[role=status]').allInnerTexts()).join(' | '); };
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+const pick = async (page, button, file) => {
+  const [fc] = await Promise.all([page.waitForEvent('filechooser'), button.click()]);
+  await fc.setFiles(file);
+};
+// Abre la descarga firmada (ventana nueva), captura la URL pedida y baja su contenido.
+// (Chromium headless trata el PDF como descarga: la ventana no navega, por eso se mira el request.)
+const download = async (page, button) => {
+  const [pop] = await Promise.all([page.context().waitForEvent('page'), button.click()]);
+  const req = await pop.waitForRequest(/\/object\/sign\//, { timeout: 8000 }).catch(() => null);
+  const url = req ? req.url() : pop.url();
+  const text = req ? await (await page.request.get(url)).text() : '';
+  await pop.close();
+  return { url, text };
+};
 (async () => {
   const browser = await chromium.launch();
   // ---------- equipo ----------
@@ -127,6 +142,29 @@ const toast = async (page) => { await page.waitForTimeout(1200); return (await p
   await page.getByPlaceholder(/Buscar/).first().fill('bancol');
   await page.keyboard.press('Enter'); await page.waitForTimeout(800);
   check('busqueda abre ficha', page.url().includes(BC));
+  // ---------- subidas del equipo (storage local) ----------
+  await page.goto(BASE + `#/sponsor/${nid}/contract`); await page.waitForTimeout(1500);
+  await pick(page, page.getByRole('button', { name: 'Subir contrato' }), { name: 'Contrato Nutresa.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 contrato qa') });
+  await toast(page);
+  check('subir contrato', sql(`select count(*) from documents where sponsor_id='${nid}' and kind='contrato' and file_path like '${nid}/contrato/%'`) === '1');
+  let dl2 = await download(page, page.getByRole('button', { name: 'Descargar' }).first());
+  check('descargar contrato firmado', dl2.url.includes('/storage/v1/object/sign/') && dl2.text.includes('contrato qa'), dl2.url.slice(0, 60));
+  await page.getByRole('button', { name: 'Borrar Contrato Nutresa.pdf' }).click();
+  check('borrar documento borra su archivo', (await toast(page)).includes('Documento borrado')
+    && sql(`select count(*) from documents where sponsor_id='${nid}' and kind='contrato'`) === '0'
+    && sql(`select count(*) from storage.objects where name like '${nid}/contrato/%'`) === '0');
+  await page.goto(BASE + `#/sponsor/${nid}/assets`); await page.waitForTimeout(1500);
+  await pick(page, page.getByRole('button', { name: 'Subir logo' }), { name: 'logo.png', mimeType: 'image/png', buffer: PNG });
+  check('equipo sube logo', (await toast(page)).includes('Logo actualizado') && sql(`select logo_path like '${nid}/logo/%' from sponsors where id='${nid}'`) === 't');
+  await pick(page, page.getByRole('button', { name: 'Subir archivo' }), { name: 'valla.png', mimeType: 'image/png', buffer: PNG });
+  await toast(page);
+  await page.getByRole('button', { name: 'Enviar a aprobación' }).click();
+  check('pieza: archivo y envio', (await toast(page)).includes('Pieza enviada') && sql(`select status||' '||(file_path like '${nid}/piezas/%') from assets where sponsor_id='${nid}' and name='Valla QA'`) === 'pendiente true');
+  await page.getByRole('button', { name: 'Nueva pieza' }).click();
+  await page.getByLabel('Nombre de la pieza').fill('Pendón QA');
+  await pick(page, page.getByRole('dialog').getByRole('button', { name: 'Elegir archivo' }), { name: 'pendon.png', mimeType: 'image/png', buffer: PNG });
+  await page.getByRole('button', { name: 'Subir y enviar' }).click();
+  check('pieza nueva con archivo', (await toast(page)).includes('aprobación') && sql(`select status from assets where sponsor_id='${nid}' and name='Pendón QA'`) === 'pendiente');
   check('equipo sin errores JS', page.errors.length === 0, page.errors.join(';'));
   await ctx.close();
 
@@ -158,6 +196,15 @@ const toast = async (page) => { await page.waitForTimeout(1200); return (await p
   // el cliente intenta ver otro patrocinio por hash: el portal siempre es el suyo
   await page.goto(BASE + '#/sponsor/00000000-0000-4000-8000-000000000102'); await page.waitForTimeout(1500);
   check('hash ajeno no cambia de portal', (await page.locator('header').innerText()).includes('Bancolombia'));
+  // subidas del patrocinador
+  await pick(page, page.getByRole('button', { name: 'Subir documento' }), { name: 'RUT Bancolombia.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 rut qa') });
+  check('cliente sube documento legal', (await toast(page)).includes('quedó subido') && sql(`select count(*) from documents where sponsor_id='${BC}' and kind='legal' and file_path like '${BC}/legal/%'`) === '1');
+  await pick(page, page.getByRole('button', { name: 'Reemplazar logo' }), { name: 'logo-bc.png', mimeType: 'image/png', buffer: PNG });
+  check('cliente sube logo', (await toast(page)).includes('Logo actualizado') && sql(`select logo_path like '${BC}/logo/%' from sponsors where id='${BC}'`) === 't');
+  await pick(page, page.getByRole('button', { name: 'Adjuntar' }), { name: 'brief.txt', mimeType: 'text/plain', buffer: Buffer.from('brief qa adjunto') });
+  await page.getByLabel('Mensaje', { exact: true }).fill('Va el brief QA');
+  await page.getByRole('button', { name: 'Enviar' }).click();
+  check('cliente adjunta archivo', (await toast(page)).includes('Mensaje enviado') && sql(`select attachment_path like '${BC}/chat/%' from comments where body='Va el brief QA'`) === 't');
   check('cliente sin errores JS', page.errors.length === 0, page.errors.join(';'));
   await ctx.close();
 

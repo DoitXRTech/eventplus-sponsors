@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Genera supabase/seed.sql (datos de ejemplo) y supabase/setup.sql (todo en un archivo
 // para pegar en el SQL Editor de Supabase). Uso: node scripts/build-seed.mjs
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { TIER_VALUES, commitmentsForTier } from '../src/lib/catalog.js';
@@ -109,7 +109,7 @@ const setup = [
   '-- EventPlus Sponsors: instalación completa en un solo archivo.',
   '-- Pegar entero en Supabase > SQL Editor > Run. Se puede volver a correr: recarga los datos de ejemplo.',
   '-- Generado por scripts/build-seed.mjs a partir de supabase/migrations/*.sql y supabase/seed.sql.',
-  '', read('supabase/migrations/0001_schema.sql'), read('supabase/migrations/0002_storage.sql'), seed,
+  '', ...readdirSync(join(root, 'supabase/migrations')).filter((f) => f.endsWith('.sql')).sort().map((f) => read(`supabase/migrations/${f}`)), seed,
 ].join('\n');
 writeFileSync(join(root, 'supabase/setup.sql'), setup);
 console.log(`seed.sql: ${seed.split('\n').length} líneas; setup.sql listo`);

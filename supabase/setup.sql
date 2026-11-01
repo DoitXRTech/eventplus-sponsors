@@ -409,7 +409,7 @@ create or replace function public.set_sponsor_logo(p_sponsor uuid, p_path text)
 returns void language plpgsql security definer set search_path = public as $$
 begin
   if not public.can_see_sponsor(p_sponsor) then raise exception 'NO_AUTORIZADO' using errcode = '42501'; end if;
-  if p_path is null or split_part(p_path, '/', 1) <> p_sponsor::text then
+  if p_path is null or split_part(p_path, '/', 1) <> p_sponsor::text or split_part(p_path, '/', 2) <> 'logo' then
     raise exception 'RUTA_INVALIDA' using errcode = '22023';
   end if;
   update public.sponsors set logo_path = p_path where id = p_sponsor;
@@ -535,6 +535,29 @@ create policy sponsor_files_update on storage.objects for update to authenticate
 
 create policy sponsor_files_delete on storage.objects for delete to authenticated
   using (bucket_id = 'sponsor-files' and public.is_team());
+
+-- Toda ruta de archivo vive en <sponsor_id>/<carpeta>/: una fila nunca puede apuntar al
+-- archivo de otro patrocinador ni a una carpeta que no le corresponde.
+
+alter table public.documents drop constraint if exists documents_path_ok;
+alter table public.documents add constraint documents_path_ok check (
+  file_path is null or (split_part(file_path, '/', 1) = sponsor_id::text and split_part(file_path, '/', 2) = kind));
+
+alter table public.assets drop constraint if exists assets_path_ok;
+alter table public.assets add constraint assets_path_ok check (
+  file_path is null or (split_part(file_path, '/', 1) = sponsor_id::text and split_part(file_path, '/', 2) = 'piezas'));
+
+alter table public.proposals drop constraint if exists proposals_path_ok;
+alter table public.proposals add constraint proposals_path_ok check (
+  file_path is null or (split_part(file_path, '/', 1) = sponsor_id::text and split_part(file_path, '/', 2) = 'propuesta'));
+
+alter table public.comments drop constraint if exists comments_path_ok;
+alter table public.comments add constraint comments_path_ok check (
+  attachment_path is null or (split_part(attachment_path, '/', 1) = sponsor_id::text and split_part(attachment_path, '/', 2) = 'chat'));
+
+alter table public.sponsors drop constraint if exists sponsors_logo_path_ok;
+alter table public.sponsors add constraint sponsors_logo_path_ok check (
+  logo_path is null or (split_part(logo_path, '/', 1) = id::text and split_part(logo_path, '/', 2) = 'logo'));
 
 -- Generado por scripts/build-seed.mjs. No editar a mano.
 -- Borra y vuelve a cargar los datos de ejemplo (no toca usuarios ni perfiles del equipo).

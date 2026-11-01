@@ -75,6 +75,14 @@ export async function uploadFile(sponsorId, folder, file) {
   return path;
 }
 
+// Borra el archivo despues de borrar su fila. Si falla queda huerfano en el bucket, pero
+// ninguna pantalla lo referencia: no vale la pena frenar al usuario por eso.
+export async function removeFile(path) {
+  if (!hasFile(path)) return;
+  const { error } = await supabase.storage.from(BUCKET).remove([path]);
+  if (error) console.warn('No se pudo borrar el archivo', path, error.message);
+}
+
 // Los datos de ejemplo traen nombres de archivo pero no archivos: esas rutas no se piden.
 export const hasFile = (path) => Boolean(path) && !path.endsWith('/seed-logo');
 
