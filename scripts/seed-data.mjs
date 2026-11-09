@@ -4,6 +4,9 @@
 
 export const EVENT = {
   id: '00000000-0000-4000-8000-000000000001',
+  // Id fijo de la organizacion StartCo (0005_multitenant.sql). events.organization_id
+  // es NOT NULL: sin este valor el insert falla antes de llegar al "on conflict".
+  organizationId: '00000000-0000-4000-8000-000000000001',
   name: 'StartCo 2026',
   city: 'Medellín',
   venue: 'Plaza Mayor Medellín',

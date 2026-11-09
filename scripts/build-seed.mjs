@@ -22,8 +22,8 @@ for (const t of ['assets', 'sponsored_startups', 'attendees', 'comments', 'docum
   out.push(`delete from public.${t} where sponsor_id in (${ids});`);
 }
 out.push(`delete from public.prospects where event_id = ${q(EVENT.id)};`);
-out.push(`insert into public.events (id, name, city, venue, start_date, end_date) values (${q(EVENT.id)}, ${q(EVENT.name)}, ${q(EVENT.city)}, ${q(EVENT.venue)}, current_date + ${EVENT.startInDays}, current_date + ${EVENT.startInDays + EVENT.lengthDays - 1})
-  on conflict (id) do update set name = excluded.name, city = excluded.city, venue = excluded.venue, start_date = excluded.start_date, end_date = excluded.end_date;`);
+out.push(`insert into public.events (id, organization_id, name, city, venue, start_date, end_date) values (${q(EVENT.id)}, ${q(EVENT.organizationId)}, ${q(EVENT.name)}, ${q(EVENT.city)}, ${q(EVENT.venue)}, current_date + ${EVENT.startInDays}, current_date + ${EVENT.startInDays + EVENT.lengthDays - 1})
+  on conflict (id) do update set organization_id = excluded.organization_id, name = excluded.name, city = excluded.city, venue = excluded.venue, start_date = excluded.start_date, end_date = excluded.end_date;`);
 const SPONSOR_COLS = ['event_id', 'name', 'initials', 'tier', 'stage', 'stage_changed_at', 'value_cop', 'sector', 'contact_name', 'contact_role', 'contact_email', 'contact_phone', 'legal_razon', 'legal_rut', 'legal_domicilio', 'legal_cc_status', 'hubspot_contacts', 'hubspot_segments', 'contract_type', 'contract_status', 'contract_signed_at', 'logo_path', 'nps', 'nps_quote', 'social_views'];
 
 for (const p of PROSPECTS) {
