@@ -5,6 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 import { SPONSORS } from './seed-data.mjs';
+import { TEST_ORG_B } from './create-org.mjs';
 
 const url = process.env.SUPABASE_URL;
 const anon = process.env.SUPABASE_ANON_KEY;
@@ -147,6 +148,39 @@ const { data: { user: teamUser } } = await team.auth.getUser();
     const { data } = await c.from('sponsors').select('id');
     const { data: com } = await c.from('comments').select('id');
     check('registro abierto sin perfil no ve nada', data.length === 0 && com.length === 0);
+  }
+}
+
+// Aislamiento entre organizaciones: necesita que exista la organizacion B (node
+// scripts/create-org.mjs). Si todavia no se creo, se salta este bloque en vez de fallar,
+// para no romper el resto de las pruebas en un proyecto que todavia es single-tenant.
+{
+  let orgB;
+  try { orgB = await login(TEST_ORG_B.teamEmail); } catch { orgB = null; }
+  if (!orgB) {
+    console.log(`SALTEADO multitenant (correr primero: node scripts/create-org.mjs)`);
+  } else {
+    const { data: otherOrgSponsors } = await orgB.from('sponsors').select('id');
+    check('equipo de otra organización no ve los patrocinadores de StartCo', (otherOrgSponsors || []).every((s) => !SPONSORS.some((x) => x.id === s.id)), `${otherOrgSponsors?.length}`);
+    const { data: otherOrgProspects } = await orgB.from('prospects').select('id');
+    check('equipo de otra organización no ve los prospectos de StartCo', (otherOrgProspects || []).length === 0);
+
+    const { data: orgBEvent } = await orgB.from('events').select('id').single();
+    const created = await orgB.from('sponsors').insert({ name: `QA ${Date.now()}`, initials: 'QA', tier: 'Seed', value_cop: 1, event_id: orgBEvent?.id }).select().single();
+    check('equipo de otra organización crea su propio patrocinador', !created.error && Boolean(created.data?.organization_id), created.error?.message);
+    if (created.data) {
+      const qa = created.data;
+      const crossRead = await team.from('sponsors').select('id').eq('id', qa.id);
+      check('StartCo no ve un patrocinador de otra organización', (crossRead.data || []).length === 0);
+      const crossStage = await team.from('sponsors').update({ stage: 'ready' }).eq('id', qa.id).select();
+      check('StartCo no puede mover la etapa de un patrocinador de otra organización', (crossStage.data || []).length === 0);
+      const crossAsset = await team.from('assets').insert({ sponsor_id: qa.id, name: 'cruzada' });
+      check('StartCo no puede crear una pieza para otra organización', !!crossAsset.error);
+
+      const path = `${qa.id}/logo/x.png`;
+      const crossUpload = await team.storage.from('sponsor-files').upload(path, new Blob(['x']), { upsert: true });
+      check('StartCo no puede subir un archivo a la carpeta de otra organización', !!crossUpload.error, crossUpload.error?.message);
+    }
   }
 }
 

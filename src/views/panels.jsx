@@ -215,13 +215,16 @@ export function AttendeesPanel({ sponsor, readOnly = false, quiet = false }) {
     }
     const batch = fresh.slice(0, left);
     const over = fresh.length - batch.length;
-    let added = 0, failed = 0;
+    let added = 0, failed = 0, failReason = '';
     if (batch.length) {
       const { error } = await supabase.from('attendees').insert(batch);
       if (!error) added = batch.length;
       else {
         // Si el lote falla (otro usuario inscribio en paralelo, cupo justo), se reintenta fila por fila.
-        for (const r of batch) { const { error: e } = await supabase.from('attendees').insert(r); if (e) failed++; else added++; }
+        for (const r of batch) {
+          const { error: e } = await supabase.from('attendees').insert(r);
+          if (e) { failed++; failReason = humanError(e); } else added++;
+        }
       }
     }
     await reload();
@@ -229,7 +232,7 @@ export function AttendeesPanel({ sponsor, readOnly = false, quiet = false }) {
     if (dup) parts.push(`${dup} ya estaban`);
     if (invalid) parts.push(`${invalid} sin nombre o email válido`);
     if (over) parts.push(`${over} fuera de cupo`);
-    if (failed) parts.push(`${failed} con error`);
+    if (failed) parts.push(`${failed} con error${failReason ? ` (${failReason})` : ''}`);
     notify(parts.join(', '), added ? 'ok' : 'error');
   });
 

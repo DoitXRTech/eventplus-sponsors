@@ -271,7 +271,7 @@ function Contract({ s }) {
       <Card className="lg:col-span-5 p-5 sm:p-6">
         <div className="font-display text-lg ink mb-2">Requisitos</div>
         <Check ok={legalOk} label="Razón social, NIT y domicilio completos" detail={legalOk ? '' : 'Complétalos en Datos legales'} />
-        <Check ok={/vigente/i.test(s.legal_cc_status)} label="Cámara de comercio vigente" detail={s.legal_cc_status || 'Sin dato'} />
+        <Check ok={s.legal_cc_status === 'Vigente'} label="Cámara de comercio vigente" detail={s.legal_cc_status || 'Sin dato'} />
         <Check ok={contractDocs.length > 0} label="Contrato subido" />
         <Check ok={s.contract_status !== 'No iniciado'} label="Enviado al cliente" />
         <Check ok={s.contract_status === 'Firmado'} label="Firmado" />
@@ -354,6 +354,7 @@ const LEGAL_FIELDS = [
   ['legal_razon', 'Razón social'], ['legal_rut', 'NIT'], ['legal_domicilio', 'Domicilio'], ['legal_cc_status', 'Cámara de comercio'],
   ['contact_name', 'Contacto'], ['contact_role', 'Cargo'], ['contact_email', 'Email'], ['contact_phone', 'Teléfono'], ['sector', 'Sector'],
 ];
+const CC_STATUS = [{ value: '', label: 'Sin dato' }, { value: 'Vigente', label: 'Vigente' }, { value: 'Vencida', label: 'Vencida' }, { value: 'Por validar', label: 'Por validar' }];
 
 function Legal({ s }) {
   const { run, notify } = useStore();
@@ -368,7 +369,9 @@ function Legal({ s }) {
       <Card className="lg:col-span-7 p-5 sm:p-6 space-y-3">
         <div className="font-display text-lg ink">Datos de facturación y contacto</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {LEGAL_FIELDS.map(([k, l]) => <Input key={k} label={l} value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} />)}
+          {LEGAL_FIELDS.map(([k, l]) => k === 'legal_cc_status'
+            ? <Select key={k} label={l} value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} options={CC_STATUS} />
+            : <Input key={k} label={l} value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} />)}
         </div>
         <Button kind="primary" size="sm" busy={busy} onClick={save}>Guardar</Button>
       </Card>
