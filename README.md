@@ -1,4 +1,4 @@
-# EventPlus Sponsors (StartCo Patrocinios), demo conectado a Supabase 
+# EventPlus Sponsors (StartCo Patrocinios), demo conectado a Supabase
 
 Plataforma de patrocinios del evento: el equipo de StartCo lleva cada patrocinio de kickoff a
 post-evento (pipeline, piezas para aprobar, contrato, propuesta, compromisos, inscritos,
