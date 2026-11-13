@@ -99,6 +99,15 @@ Deno.serve(async (req) => {
         return json({ error: "faltan_datos" }, 400);
       }
 
+      // Se valida el email del equipo ANTES de tocar organizations/events: si se rechaza
+      // aca abajo, no puede quedar una organizacion (y su evento) huerfana sin nadie que
+      // pueda entrar a ella. existingOrg (por slug, no por insert) es lo que permite que
+      // volver a correr esto con el MISMO slug y el MISMO email siga siendo idempotente.
+      const { data: existingOrg } = await admin.from("organizations").select("id").eq("slug", slug).maybeSingle();
+      const identity = await findExistingIdentity(admin, team.email);
+      if (identity?.isPlatformAdmin) return json({ error: "ese_email_ya_es_admin_de_plataforma" }, 400);
+      if (identity?.profile && identity.profile.organization_id !== existingOrg?.id) return json({ error: "ese_email_ya_pertenece_a_otra_organizacion" }, 400);
+
       const { data: org, error: orgErr } = await admin.from("organizations")
         .upsert({ name, slug }, { onConflict: "slug" }).select().single();
       if (orgErr) return json({ error: orgErr.message }, 400);
@@ -112,10 +121,6 @@ Deno.serve(async (req) => {
         if (evErr) return json({ error: evErr.message }, 400);
         ev = newEv;
       }
-
-      const identity = await findExistingIdentity(admin, team.email);
-      if (identity?.isPlatformAdmin) return json({ error: "ese_email_ya_es_admin_de_plataforma" }, 400);
-      if (identity?.profile && identity.profile.organization_id !== org.id) return json({ error: "ese_email_ya_pertenece_a_otra_organizacion" }, 400);
 
       const password = randomPassword();
       const user = await ensureAuthUser(admin, team.email, team.name, password);

@@ -74,22 +74,45 @@ const sponsorEmail = `${tag}-sponsor@example.com`;
   }
 }
 
-// No puede dar de alta un contacto para un patrocinador de otra organizacion.
-{
-  let orgB;
-  try { orgB = await login(TEST_ORG_B.teamEmail); } catch { orgB = null; }
-  if (!orgB) {
-    console.log('SALTEADO chequeo cruzado con Org B (correr primero: node scripts/create-org.mjs)');
+// No puede dar de alta un contacto para un patrocinador de otra organizacion. El patrocinador
+// de prueba en Org B se crea con el RPC create_sponsor (no con un insert directo: ver el
+// comentario en 0014_create_sponsor_rpc.sql sobre por que el insert directo no es confiable).
+let orgB;
+try { orgB = await login(TEST_ORG_B.teamEmail); } catch { orgB = null; }
+if (!orgB) {
+  console.log('SALTEADO chequeos cruzados con Org B (correr primero: node scripts/create-org.mjs)');
+} else {
+  const { data: evB } = await orgB.from('events').select('id').single();
+  const { data: sponsorB, error: spErr } = await orgB.rpc('create_sponsor', {
+    p_event_id: evB.id, p_name: tag, p_initials: 'OC', p_tier: 'Seed', p_value_cop: 1,
+    p_sector: '', p_contact_name: '', p_contact_role: '', p_contact_email: '', p_contact_phone: '',
+  });
+  if (sponsorB?.id) {
+    const { data, error } = await invoke(team, { action: 'add_sponsor_contact', sponsor_id: sponsorB.id, email: `${tag}-cross@example.com` });
+    check('StartCo no puede dar de alta un contacto de un patrocinador de otra organizacion', !!error || data?.error === 'no_autorizado', error?.message || data?.error);
+    await orgB.from('sponsors').delete().eq('id', sponsorB.id);
   } else {
-    const { data: ev } = await orgB.from('events').select('id').single();
-    const created = await orgB.from('sponsors').insert({ name: tag, initials: 'OC', tier: 'Seed', value_cop: 1, event_id: ev.id }).select().single();
-    if (created.data) {
-      const { data, error } = await invoke(team, { action: 'add_sponsor_contact', sponsor_id: created.data.id, email: `${tag}-cross@example.com` });
-      check('StartCo no puede dar de alta un contacto de un patrocinador de otra organizacion', !!error || data?.error === 'no_autorizado', error?.message || data?.error);
-    } else {
-      console.log('SALTEADO (no se pudo crear el patrocinador de prueba en Org B)');
-    }
+    console.log('SALTEADO (no se pudo crear el patrocinador de prueba en Org B)', spErr?.message || '');
   }
+
+  // Conflictos de identidad: un email que ya es de otra organizacion no se puede sumar como
+  // equipo ni como contacto de patrocinador de StartCo (pisarlo lo dejaria con dos roles).
+  const { data: d1, error: e1 } = await invoke(team, { action: 'add_team_member', email: TEST_ORG_B.teamEmail, full_name: 'x' });
+  check('no se puede sumar como equipo a un email que ya es de otra organización', !!e1 || d1?.error === 'ese_email_ya_pertenece_a_otra_organizacion', e1?.message || d1?.error);
+
+  const { data: d2, error: e2 } = await invoke(team, { action: 'add_sponsor_contact', sponsor_id: GEB, email: TEST_ORG_B.teamEmail, full_name: 'x' });
+  check('no se puede sumar como contacto a un email que ya es de otra organización', !!e2 || d2?.error === 'ese_email_ya_pertenece_a_otra_organizacion', e2?.message || d2?.error);
+}
+
+// Tampoco se puede sumar (ni como equipo ni como contacto) a un email que ya es admin de
+// plataforma -- hoy "ser admin" y "tener perfil" son excluyentes en App.jsx.
+{
+  const { data, error } = await invoke(team, { action: 'add_team_member', email: 'federicoruiz660@gmail.com', full_name: 'x' });
+  check('no se puede sumar como equipo a un email que ya es admin de plataforma', !!error || data?.error === 'ese_email_ya_es_admin_de_plataforma', error?.message || data?.error);
+}
+{
+  const { data, error } = await invoke(team, { action: 'add_sponsor_contact', sponsor_id: GEB, email: 'federicoruiz660@gmail.com', full_name: 'x' });
+  check('no se puede sumar como contacto a un email que ya es admin de plataforma', !!error || data?.error === 'ese_email_ya_es_admin_de_plataforma', error?.message || data?.error);
 }
 
 console.log(failed ? `\n${failed} pruebas fallaron` : '\nTodas las pruebas pasaron');

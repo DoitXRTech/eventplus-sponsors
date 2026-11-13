@@ -149,6 +149,27 @@ if (addResult?.password) {
   check('el admin recien sumado ya tiene el rol', reallyAdmin === true);
 }
 
+// Conflictos de identidad: un email que ya pertenece a una organizacion no puede sumarse
+// como admin de plataforma (hoy "ser admin" y "tener perfil" son excluyentes en App.jsx).
+{
+  const { data, error } = await invoke(admin, { action: 'add_platform_admin', email: 'juanga@startco.example', full_name: 'x' });
+  check('no se puede sumar como admin de plataforma a un email que ya es de una organización', !!error || data?.error === 'ese_email_ya_pertenece_a_una_organizacion', error?.message || data?.error);
+}
+
+// create_org con el email de equipo de un admin de plataforma existente: se tiene que
+// rechazar SIN dejar una organizacion huerfana (sin nadie que pueda entrar a ella).
+{
+  const orphanSlug = `${tag}-orphan`;
+  const { data, error } = await invoke(admin, {
+    action: 'create_org', name: 'x', slug: orphanSlug,
+    event: { name: 'x', start: '2027-01-01', end: '2027-01-02' },
+    team: { email: adminEmail },
+  });
+  check('create_org rechaza un email de equipo que ya es admin de plataforma', !!error || data?.error === 'ese_email_ya_es_admin_de_plataforma', error?.message || data?.error);
+  const { data: orphanOrg } = await admin.from('organizations').select('id').eq('slug', orphanSlug).maybeSingle();
+  check('ese rechazo no deja una organización huérfana creada', orphanOrg === null);
+}
+
 console.log(`\nQuedaron creados (no se borran solos): organizacion "${slug}", equipo "${teamEmail}", admin "${newAdminEmail}".`);
 console.log(failed ? `\n${failed} pruebas fallaron` : '\nTodas las pruebas pasaron');
 process.exit(failed ? 1 : 0);
