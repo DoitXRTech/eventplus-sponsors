@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Download, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { X, Download, Loader2, AlertCircle, CheckCircle2, Copy } from 'lucide-react';
 import { TIER_COLORS, STAGES, initialsOf } from './lib/catalog.js';
 import { useStore, useSignedUrl, signedUrl, hasFile } from './lib/store.jsx';
 
@@ -111,6 +111,40 @@ export function Modal({ title, onClose, children, footer }) {
         {footer && <div className="px-5 py-3 border-t cream-border flex flex-wrap justify-end gap-2">{footer}</div>}
       </div>
     </div>
+  );
+}
+
+function CopyRow({ label, value }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* clipboard no disponible, la persona puede seleccionar el texto a mano */ }
+  };
+  return (
+    <div>
+      <span className="block text-xs font-medium text-stone-600 mb-1">{label}</span>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 px-3 py-2 bg-stone-50 border cream-border rounded-lg text-sm font-mono truncate select-all">{value}</div>
+        <IconButton Icon={copied ? CheckCircle2 : Copy} label={`Copiar ${label.toLowerCase()}`} onClick={copy} />
+      </div>
+    </div>
+  );
+}
+
+// Modal que se muestra cada vez que se crea un usuario nuevo (admin, equipo o contacto de
+// patrocinador): el mensaje inline se podia perder facil (recarga, scroll, toast que se cierra
+// solo) y la clave nunca se vuelve a mostrar, asi que necesita algo que la persona tenga que
+// cerrar a proposito.
+export function CredentialsModal({ email, password, onClose, title = 'Usuario creado' }) {
+  return (
+    <Modal title={title} onClose={onClose} footer={<Button kind="primary" onClick={onClose}>Listo, ya la guardé</Button>}>
+      <p className="text-sm text-stone-600">Pasale estos datos a la persona para que entre. La clave no se vuelve a mostrar después de cerrar esto.</p>
+      <CopyRow label="Email" value={email} />
+      <CopyRow label="Clave" value={password} />
+    </Modal>
   );
 }
 
