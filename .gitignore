@@ -6,6 +6,7 @@ dist/
 *.env
 local/gotrue-bin
 .demo-credentials*
+.qa-credentials*
 *.log
 .DS_Store
 .live-snapshot.json
