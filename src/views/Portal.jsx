@@ -7,6 +7,7 @@ import { Card, Pill, TierPill, Button, Textarea, DownloadButton, Empty, useBusy 
 import { Conversation, AttendeesPanel, StartupsPanel, CommitmentsList } from './panels.jsx';
 import { DocumentList } from './docs.jsx';
 import { LogoUploader } from './SponsorDetail.jsx';
+import ChangePasswordCard from './ChangePassword.jsx';
 
 // Aprobar o pedir cambios (piezas y propuesta). Pedir cambios exige la nota.
 function Decision({ onDecide, readOnly, approveLabel = 'Aprobar', approveValue = 'aprobado' }) {
@@ -162,6 +163,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
           <Conversation sponsor={s} readOnly={preview} maxHeight="max-h-[60vh]" quiet />
         </Section>
 
+        {!preview && <ChangePasswordCard />}
       </main>
     </div>
   );
