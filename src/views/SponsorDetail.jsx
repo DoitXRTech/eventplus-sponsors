@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import {
-  ArrowLeft, ExternalLink, CheckCircle2, Circle, MessageSquare, Upload, Send, Trash2, Plus, FileText, Image as ImageIcon, Info, ChevronRight,
+  ArrowLeft, ExternalLink, CheckCircle2, Circle, MessageSquare, Upload, Send, Trash2, Plus, FileText, Image as ImageIcon, Info, ChevronRight, AlertCircle,
 } from 'lucide-react';
 import { STAGES, CONTRACT_TYPES, CONTRACT_STATUSES, ASSET_STATUS, fmtCOPfull } from '../lib/catalog.js';
-import { useStore, uploadFile, removeFile, daysSince, daysUntil, fmtDate, ago, humanError } from '../lib/store.jsx';
+import { useStore, uploadFile, removeFile, daysSince, daysUntil, fmtDate, ago, humanError, humanEdgeError, invokeEdge } from '../lib/store.jsx';
 import { supabase } from '../lib/supabase.js';
-import { Card, Pill, TierPill, SponsorLogo, Button, Input, Select, Textarea, Modal, FileButton, DownloadButton, IconButton, Field, Label, Empty, useBusy } from '../ui.jsx';
+import { Card, Pill, TierPill, SponsorLogo, Avatar, Button, Input, Select, Textarea, Modal, FileButton, DownloadButton, IconButton, Field, Label, Empty, useBusy, CredentialsModal } from '../ui.jsx';
 import { Conversation, AttendeesPanel, StartupsPanel, CommitmentsList } from './panels.jsx';
 import { DocumentList } from './docs.jsx';
 import { ACTIVITY_ICON } from './Dashboard.jsx';
@@ -69,6 +69,69 @@ function Header({ s, setView }) {
   );
 }
 
+/* ---------- Acceso al portal: quien del patrocinador puede entrar ---------- */
+function SponsorAccess({ s }) {
+  const { data, reload } = useStore();
+  const contacts = data.profiles.filter((p) => p.sponsor_id === s.id);
+  const [adding, setAdding] = useState(false);
+  const [f, setF] = useState({ email: '', full_name: '', title: '' });
+  const [busy, wrap] = useBusy();
+  const [msg, setMsg] = useState(null);
+  const [creds, setCreds] = useState(null);
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+
+  const submit = wrap(async () => {
+    setMsg(null);
+    if (!f.email.trim()) { setMsg({ kind: 'error', text: 'Escribe un email.' }); return; }
+    const { data: res, error } = await invokeEdge('org-console', { action: 'add_sponsor_contact', sponsor_id: s.id, email: f.email.trim(), full_name: f.full_name.trim(), title: f.title.trim() });
+    if (error) { setMsg({ kind: 'error', text: `No se pudo agregar: ${humanEdgeError(error)}` }); return; }
+    setMsg({ kind: 'ok', text: `${res.email} ya puede entrar al portal de ${s.name}.` });
+    setCreds({ email: res.email, password: res.password });
+    setF({ email: '', full_name: '', title: '' });
+    setAdding(false);
+    reload();
+  });
+
+  return (
+    <Card className="lg:col-span-12 p-5 sm:p-6 space-y-3">
+      <div className="font-display text-lg ink">Acceso al portal</div>
+      {creds && <CredentialsModal email={creds.email} password={creds.password} onClose={() => setCreds(null)} />}
+      {contacts.length === 0
+        ? <Empty>Todavía nadie de {s.name} tiene acceso al portal.</Empty>
+        : (
+          <div className="space-y-2">
+            {contacts.map((p) => (
+              <div key={p.id} className="flex items-center gap-3">
+                <Avatar name={p.full_name} />
+                <div className="min-w-0"><div className="text-sm ink truncate">{p.full_name}</div><div className="text-xs text-stone-500 truncate">{p.title}</div></div>
+              </div>
+            ))}
+          </div>
+        )}
+      {msg && (
+        <div className={`text-xs flex items-start gap-1.5 whitespace-pre-line ${msg.kind === 'error' ? 'text-red-700' : 'text-emerald-700'}`}>
+          {msg.kind === 'error' ? <AlertCircle size={13} className="mt-0.5 flex-shrink-0" /> : <CheckCircle2 size={13} className="mt-0.5 flex-shrink-0" />} {msg.text}
+        </div>
+      )}
+      {adding ? (
+        <div className="space-y-2.5 pt-2 border-t cream-border">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <Input label="Email" type="email" value={f.email} onChange={set('email')} autoFocus />
+            <Input label="Nombre" value={f.full_name} onChange={set('full_name')} />
+            <Input label="Cargo" value={f.title} onChange={set('title')} />
+          </div>
+          <div className="flex gap-2">
+            <Button kind="primary" size="sm" busy={busy} onClick={submit}>Dar de alta</Button>
+            <Button size="sm" onClick={() => { setAdding(false); setMsg(null); }}>Cancelar</Button>
+          </div>
+        </div>
+      ) : (
+        <Button size="sm" onClick={() => setAdding(true)}>+ Dar de alta un contacto</Button>
+      )}
+    </Card>
+  );
+}
+
 /* ---------- Resumen ---------- */
 function Overview({ s, data, go }) {
   const approved = s.assets.filter((a) => a.status === 'aprobado').length;
@@ -124,6 +187,7 @@ function Overview({ s, data, go }) {
           </div>
         )}
       </Card>
+      <SponsorAccess s={s} />
     </div>
   );
 }
