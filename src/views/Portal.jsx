@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { LogOut, ArrowLeft, Eye, ClipboardCheck, CheckCircle2, FileText, Image as ImageIcon, Calendar } from 'lucide-react';
 import { ASSET_STATUS } from '../lib/catalog.js';
 import { useStore, daysUntil, fmtDate, daysSince } from '../lib/store.jsx';
+import { useTenant } from '../lib/tenant.jsx';
 import { supabase } from '../lib/supabase.js';
 import { Card, Pill, TierPill, Button, Textarea, DownloadButton, Empty, useBusy } from '../ui.jsx';
 import { Conversation, AttendeesPanel, StartupsPanel, CommitmentsList } from './panels.jsx';
@@ -44,6 +45,7 @@ const Section = ({ id, title, sub, children, className = '' }) => (
 
 export default function ClientPortal({ id, preview = false, setView }) {
   const { data, me, run } = useStore();
+  const { name: orgName, logoUrl } = useTenant();
   const s = data.byId[id];
   const ev = data.event;
   if (!s) return <div className="p-8"><Empty>No encontramos este patrocinio.</Empty></div>;
@@ -70,8 +72,10 @@ export default function ClientPortal({ id, preview = false, setView }) {
         </div>
       )}
       <header className="bg-white border-b cream-border px-4 sm:px-8 py-3 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg accent-bg flex items-center justify-center text-white font-display">S</div>
-        <div className="flex-1 min-w-0"><div className="font-display ink leading-tight">StartCo</div><div className="text-xs text-stone-500 truncate">Portal de {s.name}</div></div>
+        {logoUrl
+          ? <img src={logoUrl} alt={orgName} className="w-8 h-8 rounded-lg object-contain bg-white flex-shrink-0" />
+          : <div className="w-8 h-8 rounded-lg accent-bg flex items-center justify-center text-white font-display flex-shrink-0">{orgName[0]}</div>}
+        <div className="flex-1 min-w-0"><div className="font-display ink leading-tight truncate">{orgName}</div><div className="text-xs text-stone-500 truncate">Portal de {s.name}</div></div>
         {!preview && <Button size="sm" Icon={LogOut} onClick={() => supabase.auth.signOut()}>Salir</Button>}
       </header>
 
@@ -159,7 +163,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
           </Section>
         </div>
 
-        <Section id="conversacion" title="Conversación con StartCo" sub="Escríbenos aquí. Te respondemos en esta misma conversación.">
+        <Section id="conversacion" title={`Conversación con ${orgName}`} sub="Escríbenos aquí. Te respondemos en esta misma conversación.">
           <Conversation sponsor={s} readOnly={preview} maxHeight="max-h-[60vh]" quiet />
         </Section>
 

@@ -7,4 +7,6 @@ const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 export const configured = Boolean(url && key);
 export const supabase = configured ? createClient(url, key) : null;
+export const SUPABASE_URL = url;
 export const BUCKET = 'sponsor-files';
+export const ORG_LOGOS_BUCKET = 'org-logos';

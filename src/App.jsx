@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { supabase, configured } from './lib/supabase.js';
 import { StoreProvider, useStore } from './lib/store.jsx';
+import { TenantProvider, useTenant } from './lib/tenant.jsx';
 import { stripDiacritics } from './lib/catalog.js';
 import { Button, Input, SponsorLogo, Toast } from './ui.jsx';
 import Dashboard from './views/Dashboard.jsx';
@@ -34,8 +35,20 @@ function useHashView() {
   return [view, setView];
 }
 
+/* ---------- Marca: logo del tenant si hay, si no el icono de siempre ---------- */
+function BrandMark({ size = 36, iconSize = 16 }) {
+  const { name, logoUrl } = useTenant();
+  if (logoUrl) return <img src={logoUrl} alt={name} style={{ width: size, height: size }} className="rounded-md object-contain flex-shrink-0 bg-white" />;
+  return (
+    <div className="accent-bg rounded-md flex items-center justify-center flex-shrink-0" style={{ width: size, height: size }}>
+      <Sparkles size={iconSize} className="text-white" strokeWidth={2.4} />
+    </div>
+  );
+}
+
 /* ---------- Login ---------- */
 function Login() {
+  const { name } = useTenant();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -51,15 +64,15 @@ function Login() {
     <div className="min-h-dvh flex items-center justify-center p-4 font-body" style={{ background: '#F5F2EC' }}>
       <form onSubmit={submit} className="w-full max-w-sm bg-white rounded-2xl border cream-border p-6 sm:p-8 space-y-4">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 accent-bg rounded-md flex items-center justify-center"><Sparkles size={16} className="text-white" strokeWidth={2.4} /></div>
+          <BrandMark size={36} />
           <div>
-            <div className="font-display text-xl leading-tight ink">StartCo</div>
-            <div className="text-[13px] text-stone-500">Patrocinios 2026</div>
+            <div className="font-display text-xl leading-tight ink">{name}</div>
+            <div className="text-[13px] text-stone-500">Patrocinios</div>
           </div>
         </div>
         <div>
           <h1 className="font-display text-2xl ink">Inicia sesión</h1>
-          <p className="text-sm text-stone-600 mt-1">Usa el email y la clave que te dio StartCo.</p>
+          <p className="text-sm text-stone-600 mt-1">Usa el email y la clave que te dio {name}.</p>
         </div>
         <Input label="Email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         <Input label="Clave" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
@@ -67,7 +80,7 @@ function Login() {
         <button type="submit" disabled={busy} className="w-full accent-bg text-white rounded-full py-2.5 text-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60">
           {busy && <Loader2 size={14} className="animate-spin" />} Entrar
         </button>
-        <p className="text-xs text-stone-500">¿No tienes acceso? Escríbele a tu contacto en StartCo.</p>
+        <p className="text-xs text-stone-500">¿No tienes acceso? Escríbele a tu contacto en {name}.</p>
       </form>
     </div>
   );
@@ -82,6 +95,7 @@ const Centered = ({ children }) => (
 /* ---------- Sidebar (fijo en escritorio, cajon en movil) ---------- */
 function Sidebar({ view, setView, open, onClose }) {
   const { data, me } = useStore();
+  const { name } = useTenant();
   const pending = data.sponsors.reduce((n, s) => n + s.pendingApprovals, 0);
   const items = [
     { key: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
@@ -97,10 +111,10 @@ function Sidebar({ view, setView, open, onClose }) {
       <aside className={`w-64 lg:w-60 ink-bg text-stone-200 flex flex-col h-dvh fixed lg:sticky top-0 left-0 z-50 lg:z-auto transition-transform
         ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
         <div className="px-5 pt-6 pb-4 border-b border-white/5 flex items-center gap-2">
-          <div className="w-8 h-8 accent-bg rounded-md flex items-center justify-center"><Sparkles size={16} className="text-white" strokeWidth={2.4} /></div>
-          <div className="flex-1">
-            <div className="font-display text-lg leading-tight text-white">StartCo</div>
-            <div className="text-[13px] text-stone-400">Patrocinios 2026</div>
+          <BrandMark size={32} />
+          <div className="flex-1 min-w-0">
+            <div className="font-display text-lg leading-tight text-white truncate">{name}</div>
+            <div className="text-[13px] text-stone-400">Patrocinios</div>
           </div>
           <button className="lg:hidden text-stone-400 hover:text-white p-1" onClick={onClose} aria-label="Cerrar menú"><X size={18} /></button>
         </div>
@@ -186,6 +200,7 @@ function Topbar({ title, subtitle, actions, setView, onMenu }) {
 /* ---------- Shell del equipo ---------- */
 function TeamApp() {
   const { data } = useStore();
+  const { name } = useTenant();
   const [view, setView] = useHashView();
   const [menu, setMenu] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
@@ -216,7 +231,7 @@ function TeamApp() {
           : (
             <div className="lg:hidden bg-white border-b cream-border px-4 py-3 flex items-center gap-2 sticky top-0 z-30">
               <button className="p-1.5 -ml-1 rounded-md hover:bg-stone-100" onClick={() => setMenu(true)} aria-label="Abrir menú"><Menu size={20} /></button>
-              <span className="font-display ink">StartCo Patrocinios</span>
+              <span className="font-display ink">{name} Patrocinios</span>
             </div>
           )}
         {view.name === 'dashboard' && <Dashboard setView={setView} />}
@@ -276,12 +291,18 @@ export default function App() {
       <p className="text-sm text-stone-600">Define VITE_SUPABASE_URL y VITE_SUPABASE_PUBLISHABLE_KEY (ver README) y vuelve a compilar.</p>
     </Centered>
   );
-  if (session === undefined) return <Centered><Loader2 className="animate-spin mx-auto text-stone-500" /></Centered>;
-  if (!session) return <Login />;
   return (
-    <StoreProvider key={session.user.id} session={session}>
-      <Gate />
-      <Toast />
-    </StoreProvider>
+    <TenantProvider>
+      {(() => {
+        if (session === undefined) return <Centered><Loader2 className="animate-spin mx-auto text-stone-500" /></Centered>;
+        if (!session) return <Login />;
+        return (
+          <StoreProvider key={session.user.id} session={session}>
+            <Gate />
+            <Toast />
+          </StoreProvider>
+        );
+      })()}
+    </TenantProvider>
   );
 }

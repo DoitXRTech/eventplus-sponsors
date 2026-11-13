@@ -8,10 +8,12 @@
 .font-mono { font-family: inherit; font-variant-numeric: tabular-nums; }
 code.font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 body, html, #root { font-family: 'Geist Variable', system-ui, sans-serif; background: #F5F2EC; font-variant-numeric: tabular-nums; }
-.accent-bg { background: #C93D0C; }
-.accent-text { color: #C93D0C; }
-.ink { color: #0F1419; }
-.ink-bg { background: #0F1419; }
+/* Identidad por tenant (src/lib/tenant.jsx la pisa en runtime); estos son los de StartCo. */
+:root { --tenant-ink: #0F1419; --tenant-accent: #C93D0C; }
+.accent-bg { background: var(--tenant-accent); }
+.accent-text { color: var(--tenant-accent); }
+.ink { color: var(--tenant-ink); }
+.ink-bg { background: var(--tenant-ink); }
 .cream-border { border-color: #E4E0D7; }
 .grain { background-image: radial-gradient(rgba(15,20,25,0.025) 1px, transparent 1px); background-size: 4px 4px; }
 .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
