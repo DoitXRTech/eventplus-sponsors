@@ -55,6 +55,38 @@ export function humanError(err) {
   return 'No se pudo guardar. Intenta de nuevo.';
 }
 
+// Traduce los codigos de error que devuelven admin-console/org-console (Edge Functions).
+export function humanEdgeError(code) {
+  const map = {
+    ese_email_ya_es_admin_de_plataforma: 'Ese email ya es admin de plataforma, no puede ser parte de una organización también.',
+    ese_email_ya_pertenece_a_otra_organizacion: 'Ese email ya pertenece a otra organización.',
+    ese_email_ya_pertenece_a_una_organizacion: 'Ese email ya pertenece a una organización, no puede ser admin de plataforma también.',
+    sponsor_no_existe: 'No encontramos ese patrocinador.',
+    faltan_datos: 'Faltan datos para completar esto.',
+    no_autorizado: 'No tienes permiso para esta acción.',
+  };
+  return map[code] || code || 'No se pudo completar la acción. Intenta de nuevo.';
+}
+
+// supabase.functions.invoke() envuelve cualquier respuesta no-2xx en un FunctionsHttpError
+// generico ("Edge Function returned a non-2xx status code") y deja el cuerpo real
+// ({error: "codigo"}) adentro de error.context, un Response que hay que leer aparte -- si no,
+// el error real de la Edge Function (ej. "ese email ya pertenece a otra organizacion") nunca
+// se ve, y en su lugar sale ese mensaje generico que no dice nada.
+export async function invokeEdge(name, body) {
+  const { data, error } = await supabase.functions.invoke(name, { body });
+  if (error) {
+    let code = error.message;
+    try {
+      const parsed = await error.context?.json?.();
+      if (parsed?.error) code = parsed.error;
+    } catch { /* el cuerpo no era JSON legible, nos quedamos con error.message */ }
+    return { data: null, error: code };
+  }
+  if (data?.error) return { data: null, error: data.error };
+  return { data, error: null };
+}
+
 async function fetchAll(table, build = (q) => q) {
   const out = [];
   for (let from = 0; ; from += 1000) {
