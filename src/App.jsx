@@ -15,6 +15,7 @@ import ApprovalsView from './views/Approvals.jsx';
 import ClientPortal from './views/Portal.jsx';
 import SettingsView from './views/Settings.jsx';
 import NewSponsorModal from './views/NewSponsor.jsx';
+import AdminConsole from './views/Admin.jsx';
 
 /* ---------- Navegacion por hash (#/sponsor/<id>) para que recargar no pierda la vista ---------- */
 const parseHash = () => {
@@ -197,9 +198,27 @@ function Topbar({ title, subtitle, actions, setView, onMenu }) {
   );
 }
 
+/* ---------- Cartel para el admin de plataforma que esta "viendo como equipo" ---------- */
+function ImpersonationBanner() {
+  const { me } = useStore();
+  const exit = async () => {
+    await supabase.from('profiles').delete().eq('id', me.id);
+    window.close();
+    // Si el navegador no deja cerrar la pestaña (no la abrio un script), al menos la manda
+    // a la raiz -- ahi, sin organizacion en el path, vuelve a ser el panel de admin.
+    window.location.href = window.location.origin + '/';
+  };
+  return (
+    <div className="ink-bg text-white px-4 py-2 text-xs flex items-center justify-between gap-3">
+      <span>Estás viendo esta organización como admin de plataforma, con tu propia cuenta. Lo que hagas queda a nombre de &quot;Admin de plataforma&quot;.</span>
+      <button onClick={exit} className="underline flex-shrink-0">Salir de la organización</button>
+    </div>
+  );
+}
+
 /* ---------- Shell del equipo ---------- */
 function TeamApp() {
-  const { data } = useStore();
+  const { data, impersonating } = useStore();
   const { name } = useTenant();
   const [view, setView] = useHashView();
   const [menu, setMenu] = useState(false);
@@ -226,6 +245,7 @@ function TeamApp() {
     <div className="flex min-h-dvh font-body" style={{ background: '#F5F2EC' }}>
       <Sidebar view={view} setView={setView} open={menu} onClose={() => setMenu(false)} />
       <div className="flex-1 min-w-0">
+        {impersonating && <ImpersonationBanner />}
         {t
           ? <Topbar title={t.title} subtitle={t.sub} actions={newBtn} setView={setView} onMenu={() => setMenu(true)} />
           : (
@@ -278,12 +298,30 @@ function Gate() {
 
 export default function App() {
   const [session, setSession] = useState(undefined);
+  // undefined: todavía no se sabe. 'admin': panel de admin de plataforma. 'app': equipo,
+  // patrocinador, o un admin "viendo como equipo" una organización puntual.
+  //
+  // Esto se decide por la URL de ESTA pestaña, no por la cuenta: un admin de plataforma
+  // que entra a /acme/... siempre ve el equipo de Acme ahí, y a / siempre ve su panel de
+  // admin -- aunque las dos pestañas compartan el mismo login y recarguen. Si dependiera
+  // solo de si la cuenta "tiene o no perfil" (algo compartido entre todas sus pestañas), la
+  // pestaña de admin se volvía equipo apenas el admin entraba a cualquier organización.
+  const [mode, setMode] = useState(undefined);
   useEffect(() => {
     if (!configured) return;
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!session) { setMode(undefined); return; }
+    const hasOrgInPath = window.location.pathname.split('/').filter(Boolean).length > 0;
+    if (hasOrgInPath) { setMode('app'); return; }
+    let alive = true;
+    supabase.rpc('is_platform_admin').then(({ data: isAdmin }) => { if (alive) setMode(isAdmin ? 'admin' : 'app'); });
+    return () => { alive = false; };
+  }, [session]);
 
   if (!configured) return (
     <Centered>
@@ -296,6 +334,8 @@ export default function App() {
       {(() => {
         if (session === undefined) return <Centered><Loader2 className="animate-spin mx-auto text-stone-500" /></Centered>;
         if (!session) return <Login />;
+        if (mode === undefined) return <Centered><Loader2 className="animate-spin mx-auto text-stone-500" /></Centered>;
+        if (mode === 'admin') return <AdminConsole email={session.user.email} />;
         return (
           <StoreProvider key={session.user.id} session={session}>
             <Gate />

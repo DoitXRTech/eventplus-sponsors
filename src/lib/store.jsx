@@ -172,7 +172,7 @@ function shape(raw) {
 }
 
 export function StoreProvider({ session, children }) {
-  const [state, setState] = useState({ loading: true, error: null, data: null, me: null });
+  const [state, setState] = useState({ loading: true, error: null, data: null, me: null, impersonating: false });
   const [toast, setToast] = useState(null);
   const timer = useRef(null);
   const userId = session.user.id;
@@ -187,8 +187,12 @@ export function StoreProvider({ session, children }) {
     try {
       const { data: me, error: meErr } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
       if (meErr) throw meErr;
-      if (!me) { setState({ loading: false, error: null, data: null, me: null }); return; }
+      if (!me) { setState({ loading: false, error: null, data: null, me: null, impersonating: false }); return; }
       const team = me.kind === 'team';
+      // Un admin de plataforma "viendo como equipo" tiene un perfil real y temporal -- esto
+      // es lo unico que distingue esa sesion de un miembro de equipo de verdad, para poder
+      // mostrarle un cartel con la opcion de salir.
+      const { data: impersonating } = await supabase.rpc('is_platform_admin');
       const [events, sponsors, profiles, assets, startups, attendees, comments, documents, proposals, commitments, activity, prospects] = await Promise.all([
         fetchAll('events'), fetchAll('sponsors'), fetchAll('profiles'), fetchAll('assets'), fetchAll('sponsored_startups'),
         fetchAll('attendees'), fetchAll('comments'), fetchAll('documents'), fetchAll('proposals'), fetchAll('commitment_status'),
@@ -197,7 +201,7 @@ export function StoreProvider({ session, children }) {
       ]);
       const data = shape({ events, sponsors, profiles, assets, startups, attendees, comments, documents, proposals, commitments, activity, prospects });
       data.event = events[0] || null;
-      setState({ loading: false, error: null, data, me });
+      setState({ loading: false, error: null, data, me, impersonating: Boolean(impersonating) });
     } catch (error) {
       console.error(error);
       setState((s) => ({ ...s, loading: false, error }));
