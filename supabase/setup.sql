@@ -928,6 +928,255 @@ grant execute on function public.sponsor_after_update() to authenticated, servic
 grant execute on function public.sponsor_org_sync() to authenticated, service_role;
 grant execute on function public.startup_activity() to authenticated, service_role;
 
+-- Admin de plataforma: un rol por encima de las organizaciones, para dar de alta
+-- organizadores nuevos desde un formulario en vez de correr scripts locales a mano.
+-- Vive aparte de profiles (un admin de plataforma no pertenece a ninguna organizacion,
+-- las ve/crea todas) y su alcance queda angosto a proposito: solo organizations y events
+-- (lo que necesita el alta), nunca sponsors/assets/comments/etc de ningun tenant.
+
+create table if not exists public.platform_admins (
+  user_id     uuid primary key references auth.users(id) on delete cascade,
+  created_at  timestamptz not null default now()
+);
+alter table public.platform_admins enable row level security;
+-- A proposito sin policies: nadie lee ni escribe esta tabla directo, ni siquiera el dueño
+-- de la fila. Solo is_platform_admin() (security definer) la consulta. Dar de alta un admin
+-- nuevo se hace a mano por SQL (insert directo), nunca desde la app.
+
+create or replace function public.is_platform_admin() returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.platform_admins where user_id = auth.uid());
+$$;
+revoke all on function public.is_platform_admin() from public;
+grant execute on function public.is_platform_admin() to authenticated, service_role;
+
+-- organizations: el admin de plataforma ve y crea organizaciones. Sin delete por ahora,
+-- para que un formulario no pueda borrar una organizacion con datos reales adentro.
+drop policy if exists organizations_platform_admin_read on public.organizations;
+create policy organizations_platform_admin_read on public.organizations for select to authenticated
+  using (public.is_platform_admin());
+
+drop policy if exists organizations_platform_admin_insert on public.organizations;
+create policy organizations_platform_admin_insert on public.organizations for insert to authenticated
+  with check (public.is_platform_admin());
+
+-- events: solo insertar el primer evento de la organizacion nueva. Editarlo despues es
+-- trabajo del equipo de esa organizacion (events_team_write ya lo cubre), no del admin.
+drop policy if exists events_platform_admin_insert on public.events;
+create policy events_platform_admin_insert on public.events for insert to authenticated
+  with check (public.is_platform_admin());
+
+-- 0008 dejo platform_admins sin ningun grant: RLS sin policies bloquea el acceso de
+-- cualquier rol a nivel de permisos de tabla, incluso al service_role (que bypassa RLS
+-- pero no los GRANT de Postgres). service_role es quien gestiona esta tabla (scripts/
+-- create-platform-admin.mjs y la Edge Function admin-console), asi que necesita el grant.
+grant select, insert, update on public.platform_admins to service_role;
+
+-- Identidad visual por organizacion: logo y 2 colores, para pintar login/sidebar/portal
+-- antes incluso de loguearse (se resuelve por el primer segmento del path, ej. /acme/...).
+-- StartCo arranca con sus colores de siempre, para no cambiarle nada a quien ya usa la app.
+
+alter table public.organizations add column if not exists logo_path text;
+alter table public.organizations add column if not exists color_primary text;
+alter table public.organizations add column if not exists color_accent text;
+
+update public.organizations set color_primary = '#0F1419', color_accent = '#C93D0C'
+  where slug = 'startco' and color_primary is null;
+
+-- Vista publica: el branding no es informacion sensible (se ve en el login, sin sesion),
+-- pero el resto de organizations sigue restringido a la propia organizacion. Una vista
+-- corre con los permisos de quien la crea (no los de quien la consulta), asi que expone
+-- estas 5 columnas igual aunque organizations tenga RLS mas angosto.
+create or replace view public.organizations_public as
+  select slug, name, logo_path, color_primary, color_accent from public.organizations;
+grant select on public.organizations_public to anon, authenticated;
+
+-- El equipo de cada organizacion edita su propia marca (antes no habia ningun update en
+-- absoluto sobre organizations: solo el admin de plataforma podia insertar/leer todas).
+drop policy if exists organizations_team_update on public.organizations;
+create policy organizations_team_update on public.organizations for update to authenticated
+  using (public.is_team() and id = public.my_org_id())
+  with check (public.is_team() and id = public.my_org_id());
+
+-- Bucket publico: el logo se ve en el login, sin sesion -- no tiene sentido una URL firmada.
+insert into storage.buckets (id, name, public)
+values ('org-logos', 'org-logos', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists org_logos_write on storage.objects;
+create policy org_logos_write on storage.objects for all to authenticated
+  using (bucket_id = 'org-logos' and public.is_team() and (storage.foldername(name))[1] = public.my_org_id()::text)
+  with check (bucket_id = 'org-logos' and public.is_team() and (storage.foldername(name))[1] = public.my_org_id()::text);
+
+-- Favicon por organizacion: mismo mecanismo que el logo (mismo bucket org-logos, carpeta
+-- <org_id>/favicon/..., ya permitida por la policy org_logos_write que solo mira el primer
+-- segmento del path, no el segundo -- no hace falta tocar storage para esto).
+
+alter table public.organizations add column if not exists favicon_path text;
+
+-- favicon_path va al final: CREATE OR REPLACE VIEW no deja insertar una columna en medio
+-- del orden existente (solo agregar al final), solo renombrar/quitar con DROP + CREATE.
+create or replace view public.organizations_public as
+  select slug, name, logo_path, color_primary, color_accent, favicon_path from public.organizations;
+grant select on public.organizations_public to anon, authenticated;
+
+-- Limpieza de advisories de performance/hygiene (ninguno de seguridad, ninguno bloqueante):
+--
+-- 1. 7 foreign keys sin índice de respaldo: cada join/delete por esa columna hacía un
+--    sequential scan. Se agregan los índices que faltaban.
+--
+-- 2. 4 funciones sin "set search_path": a diferencia del resto del esquema, estas quedaron
+--    sin fijarlo cuando se escribieron. Mismo comportamiento, solo más seguras.
+--
+-- 3. "Multiple permissive policies": en assets/commitment_status/profiles/proposals/sponsors
+--    había una policy "_read" (solo select) y otra "_team_write" (for all, que YA cubre
+--    select también) -- Postgres evaluaba las dos en cada select de un usuario de equipo.
+--    Se separa "_team_write" en insert/update/delete nada más; "_read" queda como la única
+--    policy de select (el equipo ya cumple su condición igual, es subconjunto exacto de
+--    "_read"). En events y organizations se funde directamente la condición del admin de
+--    plataforma con la del equipo en una sola policy por accion, en vez de dos separadas.
+
+-- 1. Índices faltantes -------------------------------------------------------------------
+create index if not exists activity_sponsor_idx on public.activity(sponsor_id);
+create index if not exists assets_created_by_idx on public.assets(created_by);
+create index if not exists assets_reviewed_by_idx on public.assets(reviewed_by);
+create index if not exists comments_author_id_idx on public.comments(author_id);
+create index if not exists documents_created_by_idx on public.documents(created_by);
+create index if not exists profiles_sponsor_id_idx on public.profiles(sponsor_id);
+create index if not exists prospects_event_id_idx on public.prospects(event_id);
+
+-- 2. search_path fijo en las 4 funciones que no lo tenían --------------------------------
+create or replace function public.stage_label(s text) returns text
+language sql immutable set search_path = public as $$
+  select case s when 'kickoff' then 'Kickoff' when 'contract' then 'Contrato' when 'production' then 'Producción'
+    when 'approvals' then 'Aprobaciones' when 'sponsoring' then 'Apadrinamientos'
+    when 'ready' then 'Listo para evento' when 'post' then 'Post-evento' else s end;
+$$;
+
+create or replace function public.sponsor_before_update() returns trigger
+language plpgsql set search_path = public as $$
+begin
+  if new.stage is distinct from old.stage then new.stage_changed_at := now(); end if;
+  if new.contract_status = 'Firmado' and old.contract_status is distinct from 'Firmado'
+     and new.contract_signed_at is null then
+    new.contract_signed_at := current_date;
+  end if;
+  return new;
+end $$;
+
+create or replace function public.tier_ticket_capacity(t text) returns int
+language sql immutable set search_path = public as $$
+  select case t when 'Partner' then 200 when 'Unicorn' then 150 when 'Serie B' then 100
+    when 'Serie A' then 80 when 'Seed' then 60 when 'Preseed' then 30 when 'Founders' then 15 else 0 end;
+$$;
+
+create or replace function public.tier_startup_capacity(t text) returns int
+language sql immutable set search_path = public as $$
+  select case t when 'Partner' then 5 when 'Unicorn' then 4 when 'Serie B' then 3
+    when 'Serie A' then 2 when 'Seed' then 1 else 0 end;
+$$;
+
+-- 3. Consolidar policies de select duplicadas ---------------------------------------------
+drop policy if exists assets_team_write on public.assets;
+create policy assets_team_insert on public.assets for insert to authenticated with check (public.is_team() and public.can_see_sponsor(sponsor_id));
+create policy assets_team_update on public.assets for update to authenticated using (public.is_team() and public.can_see_sponsor(sponsor_id)) with check (public.is_team() and public.can_see_sponsor(sponsor_id));
+create policy assets_team_delete on public.assets for delete to authenticated using (public.is_team() and public.can_see_sponsor(sponsor_id));
+
+drop policy if exists commitments_team_write on public.commitment_status;
+create policy commitments_team_insert on public.commitment_status for insert to authenticated with check (public.is_team() and public.can_see_sponsor(sponsor_id));
+create policy commitments_team_update on public.commitment_status for update to authenticated using (public.is_team() and public.can_see_sponsor(sponsor_id)) with check (public.is_team() and public.can_see_sponsor(sponsor_id));
+create policy commitments_team_delete on public.commitment_status for delete to authenticated using (public.is_team() and public.can_see_sponsor(sponsor_id));
+
+drop policy if exists profiles_team_write on public.profiles;
+create policy profiles_team_insert on public.profiles for insert to authenticated with check (public.is_team() and organization_id = public.my_org_id());
+create policy profiles_team_update on public.profiles for update to authenticated using (public.is_team() and organization_id = public.my_org_id()) with check (public.is_team() and organization_id = public.my_org_id());
+create policy profiles_team_delete on public.profiles for delete to authenticated using (public.is_team() and organization_id = public.my_org_id());
+
+drop policy if exists proposals_team_write on public.proposals;
+create policy proposals_team_insert on public.proposals for insert to authenticated with check (public.is_team() and public.can_see_sponsor(sponsor_id));
+create policy proposals_team_update on public.proposals for update to authenticated using (public.is_team() and public.can_see_sponsor(sponsor_id)) with check (public.is_team() and public.can_see_sponsor(sponsor_id));
+create policy proposals_team_delete on public.proposals for delete to authenticated using (public.is_team() and public.can_see_sponsor(sponsor_id));
+
+drop policy if exists sponsors_team_write on public.sponsors;
+create policy sponsors_team_insert on public.sponsors for insert to authenticated with check (public.is_team() and organization_id = public.my_org_id());
+create policy sponsors_team_update on public.sponsors for update to authenticated using (public.is_team() and organization_id = public.my_org_id()) with check (public.is_team() and organization_id = public.my_org_id());
+create policy sponsors_team_delete on public.sponsors for delete to authenticated using (public.is_team() and organization_id = public.my_org_id());
+
+-- events: funde events_platform_admin_insert + events_team_write (el insert) en una sola;
+-- events_read ya alcanza sola para select (events_team_write era subconjunto exacto).
+drop policy if exists events_team_write on public.events;
+drop policy if exists events_platform_admin_insert on public.events;
+create policy events_insert on public.events for insert to authenticated
+  with check ((public.is_team() and organization_id = public.my_org_id()) or public.is_platform_admin());
+create policy events_team_update on public.events for update to authenticated
+  using (public.is_team() and organization_id = public.my_org_id()) with check (public.is_team() and organization_id = public.my_org_id());
+create policy events_team_delete on public.events for delete to authenticated
+  using (public.is_team() and organization_id = public.my_org_id());
+
+-- organizations: funde organizations_read + organizations_platform_admin_read en una sola.
+drop policy if exists organizations_read on public.organizations;
+drop policy if exists organizations_platform_admin_read on public.organizations;
+create policy organizations_select on public.organizations for select to authenticated
+  using (id = public.my_org_id() or public.is_platform_admin());
+
+-- Bug real encontrado probando el alta de un patrocinador nuevo con una sesion real: el
+-- check de sponsors_team_insert (y el with check de sponsors_team_update) comparaban
+-- organization_id, pero esa columna la completa sponsor_org_sync() -- un trigger que corre
+-- recien al insertar/actualizar event_id. El motor de este proyecto evalua el WITH CHECK de
+-- RLS con el valor de ANTES de que el trigger la complete, asi que organization_id llegaba
+-- vacia al chequeo y el alta se rechazaba siempre, para cualquier equipo de cualquier
+-- organizacion. No es algo que haya roto la consolidacion de policies de 0012: el mismo
+-- problema ya estaba en el check combinado desde 0006 (nunca se habia probado un alta real,
+-- solo cambios de etapa). Se valida contra el evento -- que el cliente si manda, nunca lo
+-- pone un trigger -- en vez de contra la columna que la completa despues.
+
+drop policy if exists sponsors_team_insert on public.sponsors;
+create policy sponsors_team_insert on public.sponsors for insert to authenticated
+  with check (public.is_team() and exists (
+    select 1 from public.events e where e.id = event_id and e.organization_id = public.my_org_id()
+  ));
+
+drop policy if exists sponsors_team_update on public.sponsors;
+create policy sponsors_team_update on public.sponsors for update to authenticated
+  using (public.is_team() and organization_id = public.my_org_id())
+  with check (public.is_team() and exists (
+    select 1 from public.events e where e.id = event_id and e.organization_id = public.my_org_id()
+  ));
+
+-- Workaround del bug real de sponsors_team_insert (ver 0013): el INSERT en sponsors sigue
+-- fallando contra RLS sin importar la forma del check (probado con la columna directa y con
+-- el join al evento) -- el mismo UPDATE, con la misma condicion, funciona perfecto. Es una
+-- interaccion puntual entre RLS y el trigger que completa organization_id, especifica de
+-- insertar en esta tabla, que no se pudo resolver ajustando la policy declarativa.
+--
+-- En vez de seguir ahi, se mueve el alta a una funcion RPC security definer -- el mismo
+-- patron que ya usan review_asset/review_proposal/set_sponsor_logo para lo que necesita
+-- mas que un chequeo declarativo. Corre como el dueno de la funcion (bypassa RLS en sponsors
+-- a proposito) y hace su propio chequeo de permisos adentro, en PL/pgSQL en vez de en una
+-- policy -- el trigger que completa organization_id sigue corriendo igual, eso no cambia.
+
+create or replace function public.create_sponsor(
+  p_event_id uuid, p_name text, p_initials text, p_tier text, p_value_cop bigint,
+  p_sector text default '', p_contact_name text default '', p_contact_role text default '',
+  p_contact_email text default '', p_contact_phone text default ''
+) returns public.sponsors
+language plpgsql security definer set search_path = public as $$
+declare s public.sponsors; v_org uuid;
+begin
+  if not public.is_team() then raise exception 'NO_AUTORIZADO' using errcode = '42501'; end if;
+  select organization_id into v_org from public.events where id = p_event_id;
+  if v_org is null or v_org <> public.my_org_id() then
+    raise exception 'NO_AUTORIZADO' using errcode = '42501';
+  end if;
+  insert into public.sponsors (event_id, name, initials, tier, value_cop, sector, contact_name, contact_role, contact_email, contact_phone)
+  values (p_event_id, p_name, p_initials, p_tier, p_value_cop, p_sector, p_contact_name, p_contact_role, p_contact_email, p_contact_phone)
+  returning * into s;
+  return s;
+end $$;
+
+revoke all on function public.create_sponsor(uuid, text, text, text, bigint, text, text, text, text, text) from public;
+grant execute on function public.create_sponsor(uuid, text, text, text, bigint, text, text, text, text, text) to authenticated;
+
 -- Generado por scripts/build-seed.mjs. No editar a mano.
 -- Borra y vuelve a cargar los datos de ejemplo (no toca usuarios ni perfiles del equipo).
 begin;
