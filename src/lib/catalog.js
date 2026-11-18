@@ -86,7 +86,10 @@ export const STAGES = [
   { key: 'post',       label: 'Post-evento',     color: '#0F1419', desc: 'Evidencias, NPS y cierre' },
 ];
 
+// 'StartCo' es el valor guardado (check de sponsors.contract_type) para "contrato del
+// organizador"; en pantalla se muestra con el nombre de la organizacion del usuario.
 export const CONTRACT_TYPES = ['StartCo', 'Cliente', 'Mixto'];
+export const contractTypeLabel = (v, orgName) => (v === 'StartCo' ? orgName || 'Organizador' : v);
 export const CONTRACT_STATUSES = ['No iniciado', 'Enviado', 'En revisión legal', 'Firmado'];
 
 export const ASSET_STATUS = {

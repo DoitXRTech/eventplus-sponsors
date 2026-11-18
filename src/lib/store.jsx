@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase, BUCKET } from './supabase.js';
 import { ticketCapacity, startupCapacity, commitmentsForTier } from './catalog.js';
+import { useApplyOrg, slugFromPath } from './tenant.jsx';
 
 const Ctx = createContext(null);
 export const useStore = () => useContext(Ctx);
@@ -87,6 +88,13 @@ export async function invokeEdge(name, body) {
   return { data, error: null };
 }
 
+// Saca al admin de plataforma de la organizacion en la que esta: borra su perfil temporal
+// (lo crea start_impersonation en admin-console). Devuelve el error, o null.
+export async function leaveOrg(userId) {
+  const { error } = await supabase.from('profiles').delete().eq('id', userId);
+  return error;
+}
+
 async function fetchAll(table, build = (q) => q) {
   const out = [];
   for (let from = 0; ; from += 1000) {
@@ -171,11 +179,17 @@ function shape(raw) {
   return { ...raw, sponsors, byId: Object.fromEntries(sponsors.map((s) => [s.id, s])) };
 }
 
+// platformAdmin: la cuenta es admin de plataforma. impersonating: ademas esta dentro de una
+// organizacion (tiene perfil temporal). otherOrg: ese perfil es de otra organizacion que la
+// de la URL de esta pestaña (no se cargan datos).
+const EMPTY = { loading: false, error: null, data: null, me: null, platformAdmin: false, impersonating: false, otherOrg: null };
+
 export function StoreProvider({ session, children }) {
-  const [state, setState] = useState({ loading: true, error: null, data: null, me: null, impersonating: false });
+  const [state, setState] = useState({ ...EMPTY, loading: true });
   const [toast, setToast] = useState(null);
   const timer = useRef(null);
   const userId = session.user.id;
+  const applyOrg = useApplyOrg();
 
   const notify = useCallback((text, kind = 'ok') => {
     clearTimeout(timer.current);
@@ -185,28 +199,44 @@ export function StoreProvider({ session, children }) {
 
   const load = useCallback(async () => {
     try {
-      const { data: me, error: meErr } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
-      if (meErr) throw meErr;
-      if (!me) { setState({ loading: false, error: null, data: null, me: null, impersonating: false }); return; }
-      const team = me.kind === 'team';
       // Un admin de plataforma "viendo como equipo" tiene un perfil real y temporal -- esto
       // es lo unico que distingue esa sesion de un miembro de equipo de verdad, para poder
       // mostrarle un cartel con la opcion de salir.
-      const { data: impersonating } = await supabase.rpc('is_platform_admin');
-      const [events, sponsors, profiles, assets, startups, attendees, comments, documents, proposals, commitments, activity, prospects] = await Promise.all([
+      const [{ data: me, error: meErr }, { data: isAdmin }] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+        supabase.rpc('is_platform_admin'),
+      ]);
+      if (meErr) throw meErr;
+      const platformAdmin = Boolean(isAdmin);
+      if (!me) { setState({ ...EMPTY, loading: false, platformAdmin }); return; }
+      const team = me.kind === 'team';
+      const [events, sponsors, profiles, assets, startups, attendees, comments, documents, proposals, commitments, activity, prospects, org] = await Promise.all([
         fetchAll('events'), fetchAll('sponsors'), fetchAll('profiles'), fetchAll('assets'), fetchAll('sponsored_startups'),
         fetchAll('attendees'), fetchAll('comments'), fetchAll('documents'), fetchAll('proposals'), fetchAll('commitment_status'),
         fetchAll('activity', (q) => q.order('created_at', { ascending: false })),
         team ? fetchAll('prospects') : Promise.resolve([]),
+        // La marca sale de la organizacion del usuario, no de la URL por la que entro.
+        supabase.from('organizations').select('id, slug, name, logo_path, favicon_path, color_primary, color_accent')
+          .eq('id', me.organization_id).maybeSingle().then(({ data: row }) => row),
       ]);
+      // El admin de plataforma tiene UN solo perfil temporal: si desde otra pestaña entro a
+      // otra organizacion, esta pestaña (abierta para la anterior) cargaria los datos de la
+      // nueva bajo la URL y la marca viejas. En vez de eso, Gate le muestra un aviso.
+      const urlSlug = slugFromPath();
+      if (platformAdmin && org && urlSlug && urlSlug !== org.slug) {
+        setState({ ...EMPTY, loading: false, me, platformAdmin, impersonating: true, otherOrg: org });
+        return;
+      }
       const data = shape({ events, sponsors, profiles, assets, startups, attendees, comments, documents, proposals, commitments, activity, prospects });
       data.event = events[0] || null;
-      setState({ loading: false, error: null, data, me, impersonating: Boolean(impersonating) });
+      // Mismo tick que setState: la primera pantalla con datos ya sale con la marca correcta.
+      applyOrg(org);
+      setState({ ...EMPTY, loading: false, data, me, platformAdmin, impersonating: platformAdmin });
     } catch (error) {
       console.error(error);
       setState((s) => ({ ...s, loading: false, error }));
     }
-  }, [userId]);
+  }, [userId, applyOrg]);
 
   useEffect(() => { load(); }, [load]);
 

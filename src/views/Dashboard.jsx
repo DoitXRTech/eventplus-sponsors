@@ -36,13 +36,13 @@ export default function Dashboard({ setView }) {
   return (
     <div className="px-4 sm:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
       <div className="grid grid-cols-2 lg:grid-cols-12 gap-4">
-        <Card className="col-span-2 lg:col-span-5 p-6 sm:p-7 ink-bg text-white relative overflow-hidden">
-          <div className="text-[13px] text-stone-400 mb-3">Patrocinadores confirmados · {ev?.name}</div>
+        <Card className="col-span-2 lg:col-span-5 p-6 sm:p-7 ink-bg relative overflow-hidden">
+          <div className="text-[13px] on-ink-muted mb-3">Patrocinadores confirmados · {ev?.name}</div>
           <div className="font-display text-5xl mb-2">{S.length}</div>
-          <div className="text-sm text-stone-300">{fmtCOP(totalValue)} en paquetes vendidos</div>
+          <div className="text-sm on-ink-muted">{fmtCOP(totalValue)} en paquetes vendidos</div>
           <div className="mt-6 flex flex-wrap items-center gap-4 text-xs">
-            <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" />Listos <b className="text-white ml-1">{S.filter((s) => s.stage === 'ready' || s.stage === 'post').length}</b></span>
-            <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full" style={{ background: '#FF5A1F' }} />En curso <b className="text-white ml-1">{S.filter((s) => s.stage !== 'ready' && s.stage !== 'post').length}</b></span>
+            <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" />Listos <b className="ml-1">{S.filter((s) => s.stage === 'ready' || s.stage === 'post').length}</b></span>
+            <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full" style={{ background: '#FF5A1F' }} />En curso <b className="ml-1">{S.filter((s) => s.stage !== 'ready' && s.stage !== 'post').length}</b></span>
           </div>
         </Card>
         <Card className="col-span-2 sm:col-span-1 lg:col-span-3 p-6">
