@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Check, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useStore, humanEdgeError, invokeEdge } from '../lib/store.jsx';
 import { supabase, SUPABASE_URL, ORG_LOGOS_BUCKET } from '../lib/supabase.js';
-import { Card, Input, Button, Avatar, Pill, FileButton, useBusy, CredentialsModal } from '../ui.jsx';
+import { DEFAULT_COLORS as TENANT_DEFAULTS } from '../lib/tenant.jsx';
+import { Card, Input, Button, Avatar, Pill, FileButton, useBusy, CredentialsModal, ColorHint } from '../ui.jsx';
 import ChangePasswordCard from './ChangePassword.jsx';
 
-const DEFAULT_COLORS = { color_primary: '#0F1419', color_accent: '#C93D0C' };
+const DEFAULT_COLORS = { color_primary: TENANT_DEFAULTS.colorPrimary, color_accent: TENANT_DEFAULTS.colorAccent };
 
 function TeamCard() {
   const { data, reload } = useStore();
@@ -64,7 +65,8 @@ function TeamCard() {
 }
 
 function BrandCard() {
-  const { me, notify } = useStore();
+  // reload: recarga el store, que vuelve a aplicar la marca (useApplyOrg) en toda la app.
+  const { me, notify, reload } = useStore();
   const [org, setOrg] = useState(null);
   const [busy, wrap] = useBusy();
 
@@ -87,6 +89,7 @@ function BrandCard() {
     if (error) { notify(`No se pudo guardar el ${label}.`, 'error'); return; }
     notify(`${label[0].toUpperCase()}${label.slice(1)} actualizado`);
     load();
+    reload();
   });
   const uploadLogo = uploadAsset('logo', 'logo_path', 'logo');
   const uploadFavicon = uploadAsset('favicon', 'favicon_path', 'favicon');
@@ -97,6 +100,7 @@ function BrandCard() {
   const saveColor = (k) => wrap(async (e) => {
     const { error } = await supabase.from('organizations').update({ [k]: e.target.value }).eq('id', org.id);
     if (error) notify('No se pudo guardar el color.', 'error');
+    else reload();
   });
 
   return (
@@ -108,7 +112,7 @@ function BrandCard() {
       <div className="flex items-center gap-3">
         {logoUrl
           ? <img src={logoUrl} alt={org.name} className="w-14 h-14 rounded-lg object-contain border cream-border bg-white" />
-          : <div className="w-14 h-14 rounded-lg accent-bg flex items-center justify-center text-white font-display text-lg">{org.name[0]}</div>}
+          : <div className="w-14 h-14 rounded-lg accent-bg flex items-center justify-center font-display text-lg">{org.name[0]}</div>}
         <FileButton accept="image/*" busy={busy} onFile={uploadLogo}>{logoUrl ? 'Cambiar logo' : 'Subir logo'}</FileButton>
       </div>
       <div className="flex items-center gap-3">
@@ -121,10 +125,12 @@ function BrandCard() {
         <label className="block">
           <span className="block text-xs font-medium text-stone-600 mb-1">Color principal</span>
           <input type="color" value={org.color_primary || DEFAULT_COLORS.color_primary} onChange={previewColor('color_primary')} onBlur={saveColor('color_primary')} className="w-full h-9 rounded-lg border cream-border" />
+          <ColorHint color={org.color_primary || DEFAULT_COLORS.color_primary} />
         </label>
         <label className="block">
           <span className="block text-xs font-medium text-stone-600 mb-1">Color de acento</span>
           <input type="color" value={org.color_accent || DEFAULT_COLORS.color_accent} onChange={previewColor('color_accent')} onBlur={saveColor('color_accent')} className="w-full h-9 rounded-lg border cream-border" />
+          <ColorHint color={org.color_accent || DEFAULT_COLORS.color_accent} />
         </label>
       </div>
       <p className="text-xs text-stone-500">Se ven al entrar por <code className="font-mono">/{org.slug}/</code> delante de la URL.</p>

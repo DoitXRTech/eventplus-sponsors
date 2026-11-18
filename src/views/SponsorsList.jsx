@@ -44,7 +44,7 @@ export default function SponsorsList({ setView }) {
         <div className="flex gap-1 overflow-x-auto scrollbar-thin">
           {FILTERS.map((x) => (
             <button key={x.key} onClick={() => setFilter(x.key)}
-              className={`px-3 py-1.5 text-xs rounded-full whitespace-nowrap ${filter === x.key ? 'ink-bg text-white' : 'bg-white border cream-border text-stone-700 hover:bg-stone-50'}`}>
+              className={`px-3 py-1.5 text-xs rounded-full whitespace-nowrap ${filter === x.key ? 'ink-bg' : 'bg-white border cream-border text-stone-700 hover:bg-stone-50'}`}>
               {x.label} <span className="opacity-60">{data.sponsors.filter(x.test).length}</span>
             </button>
           ))}

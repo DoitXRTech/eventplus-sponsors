@@ -3,6 +3,7 @@ import { Paperclip, Send, Lock, Trash2, Plus, Upload, Download, Search, CheckCir
 import { DAY_LABELS, ATTENDEE_STATUS, stripDiacritics } from '../lib/catalog.js';
 import { useStore, uploadFile, relDay, fmtTime, fmtSize, fmtDate, humanError } from '../lib/store.jsx';
 import { supabase } from '../lib/supabase.js';
+import { useTenant } from '../lib/tenant.jsx';
 import { Pill, Avatar, Button, IconButton, Input, Select, Modal, FileButton, DownloadButton, Empty, useBusy } from '../ui.jsx';
 
 export const CONTEXTS = [
@@ -18,6 +19,7 @@ export const CONTEXTS = [
 // quiet: en el portal la accion principal es aprobar; enviar un mensaje va como secundaria.
 export function Conversation({ sponsor, readOnly = false, maxHeight = '', quiet = false }) {
   const { me, isTeam, run, notify } = useStore();
+  const { name: orgName } = useTenant();
   const [body, setBody] = useState('');
   const [file, setFile] = useState(null);
   const [ctx, setCtx] = useState('');
@@ -61,21 +63,22 @@ export function Conversation({ sponsor, readOnly = false, maxHeight = '', quiet 
             <div className="space-y-3">
               {g.items.map((c) => {
                 const mine = c.author_id === me.id;
-                const startco = c.team === 'startco';
+                // 'startco' es el valor guardado en la base para "equipo organizador" (cualquier org).
+                const fromTeam = c.team === 'startco';
                 return (
                   <div key={c.id} className={`flex gap-2.5 ${mine ? 'flex-row-reverse' : ''}`}>
-                    <Avatar name={c.author_name} size={8} color={startco ? '#0F1419' : '#C93D0C'} />
+                    <Avatar name={c.author_name} size={8} brand={fromTeam ? 'ink' : 'accent'} />
                     <div className={`max-w-[85%] sm:max-w-[75%] min-w-0 ${mine ? 'items-end text-right' : ''}`}>
                       <div className="text-xs text-stone-500 mb-1">
                         <span className="font-medium text-stone-700">{c.author_name}</span>{c.author_role ? ` · ${c.author_role}` : ''} · {fmtTime(c.created_at)}
                       </div>
                       <div className={`inline-block text-left px-3.5 py-2.5 rounded-2xl text-sm whitespace-pre-wrap break-words
-                        ${c.internal ? 'bg-amber-50 border border-amber-200 text-amber-950' : mine ? 'ink-bg text-white' : 'bg-stone-100 text-stone-900'}`}>
+                        ${c.internal ? 'bg-amber-50 border border-amber-200 text-amber-950' : mine ? 'ink-bg' : 'bg-stone-100 text-stone-900'}`}>
                         {c.internal && <div className="text-xs font-semibold mb-1 inline-flex items-center gap-1"><Lock size={10} /> Nota interna</div>}
-                        {c.context_label && <div className={`text-xs mb-1 ${mine && !c.internal ? 'text-stone-300' : 'text-stone-500'}`}>Sobre: {c.context_label}</div>}
+                        {c.context_label && <div className={`text-xs mb-1 ${mine && !c.internal ? 'on-ink-muted' : 'text-stone-500'}`}>Sobre: {c.context_label}</div>}
                         <div>{c.body}</div>
                         {c.attachment_path && (
-                          <div className={`mt-2 flex items-center gap-2 text-xs rounded-lg px-2 py-1 ${mine && !c.internal ? 'bg-white/10' : 'bg-white'}`}>
+                          <div className={`mt-2 flex items-center gap-2 text-xs rounded-lg px-2 py-1 ${mine && !c.internal ? 'on-ink-overlay' : 'bg-white'}`}>
                             <Paperclip size={12} /> <span className="truncate flex-1">{c.attachment_name}</span> <span className="opacity-60">{fmtSize(c.attachment_size)}</span>
                             <DownloadButton path={c.attachment_path} />
                           </div>
@@ -93,7 +96,7 @@ export function Conversation({ sponsor, readOnly = false, maxHeight = '', quiet 
       {!readOnly && (
         <div className="mt-5 border cream-border rounded-xl bg-white p-3">
           <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={2} maxLength={4000}
-            placeholder={internal ? 'Nota solo para el equipo StartCo' : 'Escribe un mensaje'} aria-label="Mensaje"
+            placeholder={internal ? `Nota solo para el equipo${orgName ? ` de ${orgName}` : ''}` : 'Escribe un mensaje'} aria-label="Mensaje"
             className="w-full text-sm outline-none resize-y bg-transparent" />
           {file && (
             <div className="text-xs text-stone-700 flex items-center gap-2 mb-2"><Paperclip size={12} /> {file.name} <span className="text-stone-500">{fmtSize(file.size)}</span>

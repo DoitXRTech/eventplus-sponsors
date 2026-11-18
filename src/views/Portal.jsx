@@ -63,7 +63,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
   return (
     <div className="min-h-dvh font-body" style={{ background: '#F5F2EC' }}>
       {preview && (
-        <div className="ink-bg text-white px-4 sm:px-8 py-2.5 text-xs flex flex-wrap items-center gap-x-3 gap-y-2">
+        <div className="ink-bg px-4 sm:px-8 py-2.5 text-xs flex flex-wrap items-center gap-x-3 gap-y-2">
           <Eye size={14} /> <span className="flex-1 min-w-[180px]">Vista previa del portal de {s.name}, tal como lo ve el patrocinador. Solo lectura.</span>
           <select value={s.id} onChange={(e) => setView({ name: 'portal', id: e.target.value })} aria-label="Ver otro patrocinador" className="text-stone-900 px-2 py-1 rounded-full text-xs max-w-[180px]">
             {data.sponsors.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
@@ -74,17 +74,17 @@ export default function ClientPortal({ id, preview = false, setView }) {
       <header className="bg-white border-b cream-border px-4 sm:px-8 py-3 flex items-center gap-3">
         {logoUrl
           ? <img src={logoUrl} alt={orgName} className="w-8 h-8 rounded-lg object-contain bg-white flex-shrink-0" />
-          : <div className="w-8 h-8 rounded-lg accent-bg flex items-center justify-center text-white font-display flex-shrink-0">{orgName[0]}</div>}
-        <div className="flex-1 min-w-0"><div className="font-display ink leading-tight truncate">{orgName}</div><div className="text-xs text-stone-500 truncate">Portal de {s.name}</div></div>
+          : <div className="w-8 h-8 rounded-lg accent-bg flex items-center justify-center font-display flex-shrink-0">{(orgName || s.name)[0]}</div>}
+        <div className="flex-1 min-w-0"><div className="font-display ink leading-tight truncate">{orgName || 'Patrocinios'}</div><div className="text-xs text-stone-500 truncate">Portal de {s.name}</div></div>
         {!preview && <Button size="sm" Icon={LogOut} onClick={() => supabase.auth.signOut()}>Salir</Button>}
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-8 py-6 sm:py-8 space-y-4">
-        <Card className="p-6 sm:p-8 ink-bg text-white relative overflow-hidden">
+        <Card className="p-6 sm:p-8 ink-bg relative overflow-hidden">
           <div className="relative">
-            <div className="text-[13px] text-stone-400 mb-2">{ev?.name}</div>
+            <div className="text-[13px] on-ink-muted mb-2">{ev?.name}</div>
             <h1 className="font-display text-2xl sm:text-3xl">Hola{firstName ? `, ${firstName}` : ''}</h1>
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-stone-300">
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm on-ink-muted">
               <TierPill tier={s.tier} size="lg" />
               {ev && <span className="inline-flex items-center gap-1.5"><Calendar size={14} /> {fmtDate(ev.start_date, { day: 'numeric', month: 'long' })} y {fmtDate(ev.end_date, { day: 'numeric', month: 'long' })} · {ev.venue || ev.city}</span>}
               {toEvent !== null && toEvent >= 0 && <span>Faltan {toEvent} días</span>}
@@ -163,7 +163,7 @@ export default function ClientPortal({ id, preview = false, setView }) {
           </Section>
         </div>
 
-        <Section id="conversacion" title={`Conversación con ${orgName}`} sub="Escríbenos aquí. Te respondemos en esta misma conversación.">
+        <Section id="conversacion" title={orgName ? `Conversación con ${orgName}` : 'Conversación con el equipo'} sub="Escríbenos aquí. Te respondemos en esta misma conversación.">
           <Conversation sponsor={s} readOnly={preview} maxHeight="max-h-[60vh]" quiet />
         </Section>
 

@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { LogOut, Sparkles, AlertCircle, CheckCircle2, Pencil, LogIn } from 'lucide-react';
 import { supabase, SUPABASE_URL, ORG_LOGOS_BUCKET } from '../lib/supabase.js';
-import { humanEdgeError, invokeEdge } from '../lib/store.jsx';
-import { Card, Button, Input, FileButton, IconButton, useBusy, CredentialsModal } from '../ui.jsx';
+import { humanEdgeError, invokeEdge, leaveOrg } from '../lib/store.jsx';
+import { DEFAULT_COLORS } from '../lib/tenant.jsx';
+import { Card, Button, Input, FileButton, IconButton, useBusy, CredentialsModal, ColorHint } from '../ui.jsx';
+import { isHex, onColor } from '../lib/color.js';
 import ChangePasswordCard from './ChangePassword.jsx';
 
 // Panel del admin de plataforma: no pertenece a ninguna organizacion (no tiene fila en
@@ -22,9 +24,10 @@ function Banner({ banner }) {
 }
 
 function OrgLogo({ org }) {
+  const accent = isHex(org.color_accent) ? org.color_accent : DEFAULT_COLORS.colorAccent;
   if (org.logo_path) return <img src={`${SUPABASE_URL}/storage/v1/object/public/${ORG_LOGOS_BUCKET}/${org.logo_path}`} alt={org.name} className="w-10 h-10 rounded-lg object-contain border cream-border bg-white flex-shrink-0" />;
   return (
-    <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-display flex-shrink-0" style={{ background: org.color_accent || '#C93D0C' }}>
+    <div className="w-10 h-10 rounded-lg flex items-center justify-center font-display flex-shrink-0" style={{ background: accent, color: onColor(accent) }}>
       {org.name[0]}
     </div>
   );
@@ -43,7 +46,7 @@ function FaviconPreview({ url, name }) {
 }
 
 function OrgEditForm({ org, onCancel, onSaved }) {
-  const [f, setF] = useState({ name: org.name, slug: org.slug, color_primary: org.color_primary || '#0F1419', color_accent: org.color_accent || '#C93D0C' });
+  const [f, setF] = useState({ name: org.name, slug: org.slug, color_primary: org.color_primary || DEFAULT_COLORS.colorPrimary, color_accent: org.color_accent || DEFAULT_COLORS.colorAccent });
   const [logoPath, setLogoPath] = useState(org.logo_path);
   const [faviconPath, setFaviconPath] = useState(org.favicon_path);
   const [busy, wrap] = useBusy();
@@ -102,10 +105,12 @@ function OrgEditForm({ org, onCancel, onSaved }) {
         <label className="block">
           <span className="block text-xs font-medium text-stone-600 mb-1">Color principal</span>
           <input type="color" value={f.color_primary} onChange={set('color_primary')} className="w-full h-8 rounded-lg border cream-border" />
+          <ColorHint color={f.color_primary} />
         </label>
         <label className="block">
           <span className="block text-xs font-medium text-stone-600 mb-1">Color de acento</span>
           <input type="color" value={f.color_accent} onChange={set('color_accent')} className="w-full h-8 rounded-lg border cream-border" />
+          <ColorHint color={f.color_accent} />
         </label>
       </div>
       <div className="flex gap-2">
@@ -116,22 +121,63 @@ function OrgEditForm({ org, onCancel, onSaved }) {
   );
 }
 
-function OrgsList({ orgs, loading, onChanged }) {
+const goToOrg = (org) => window.location.assign(`/${org.slug}/`);
+
+// La cuenta del admin tiene UN solo perfil temporal (start_impersonation hace upsert por id):
+// si entrara a una segunda organizacion, cualquier pestaña que siguiera en la primera
+// empezaria a cargar los datos de la segunda. Por eso: una organizacion a la vez, en esta
+// misma pestaña, y para entrar a otra primero hay que salir de la actual.
+function ActiveOrgCard({ org, userId, onLeft }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const leave = async () => {
+    setBusy(true); setError('');
+    const err = await leaveOrg(userId);
+    setBusy(false);
+    if (err) { setError('No se pudo salir de la organización. Intenta de nuevo.'); return; }
+    onLeft();
+  };
+  return (
+    <Card className="p-5 border-amber-200 bg-amber-50/60 space-y-3">
+      <div className="flex items-center gap-3">
+        <OrgLogo org={org} />
+        <div className="min-w-0 flex-1">
+          <div className="text-sm ink">Estás dentro de <b>{org.name}</b></div>
+          <div className="text-xs text-stone-600">Para entrar a otra organización, primero sal de esta.</div>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button kind="dark" size="sm" Icon={LogIn} onClick={() => goToOrg(org)}>Volver a {org.name}</Button>
+        <Button size="sm" busy={busy} onClick={leave}>Salir de {org.name}</Button>
+      </div>
+      {error && <div className="text-xs text-red-700 flex items-center gap-1.5"><AlertCircle size={12} /> {error}</div>}
+    </Card>
+  );
+}
+
+function OrgsList({ orgs, loading, onChanged, activeOrg, checkActive }) {
   const [editing, setEditing] = useState(null);
   const [impersonating, setImpersonating] = useState(null);
   const [impError, setImpError] = useState(null);
 
   const impersonate = async (org) => {
     setImpError(null);
+    if (activeOrg?.id === org.id) { goToOrg(org); return; }
+    // Se vuelve a mirar en el servidor: este panel pudo quedar abierto en otra pestaña
+    // mientras el admin entraba a una organizacion.
+    const current = await checkActive();
+    if (current && current.id !== org.id) {
+      setImpError({ id: org.id, text: `Ya estás dentro de ${current.name}. Sal de esa primero.` });
+      return;
+    }
     const ok = window.confirm(
-      `Vas a poder ver y editar "${org.name}" como si fueras parte de su equipo, con tu misma cuenta de admin.\nSe abre en una pestaña nueva; podés salir desde ahí cuando termines.\n\n¿Continuar?`,
+      `Vas a entrar a "${org.name}" como parte de su equipo, con tu misma cuenta de admin.\nSe abre en esta pestaña. Para volver a este panel, usa "Salir y volver al panel" arriba de todo.\n\n¿Continuar?`,
     );
     if (!ok) return;
     setImpersonating(org.id);
     const { error } = await invokeEdge('admin-console', { action: 'start_impersonation', organization_id: org.id });
-    setImpersonating(null);
-    if (error) { setImpError({ id: org.id, text: humanEdgeError(error) }); return; }
-    window.open(`${window.location.origin}/${org.slug}/`, '_blank');
+    if (error) { setImpersonating(null); setImpError({ id: org.id, text: humanEdgeError(error) }); return; }
+    goToOrg(org);
   };
 
   return (
@@ -155,7 +201,9 @@ function OrgsList({ orgs, loading, onChanged }) {
                       ? <div className="text-xs text-stone-500 truncate mt-0.5">{o.team.map((t) => t.email).join(', ')}</div>
                       : <div className="text-xs text-stone-400 italic mt-0.5">Sin usuarios de equipo</div>}
                   </div>
-                  <IconButton Icon={LogIn} label={`Entrar como ${o.name}`} disabled={impersonating === o.id} onClick={() => impersonate(o)} />
+                  <IconButton Icon={LogIn}
+                    label={activeOrg?.id === o.id ? `Volver a ${o.name}` : activeOrg ? `Sal de ${activeOrg.name} para entrar a ${o.name}` : `Entrar a ${o.name}`}
+                    disabled={impersonating === o.id || Boolean(activeOrg && activeOrg.id !== o.id)} onClick={() => impersonate(o)} />
                   <button onClick={() => setEditing(o.id)} aria-label={`Editar ${o.name}`} title="Editar"
                     className="w-8 h-8 rounded-full hover:bg-stone-100 inline-flex items-center justify-center flex-shrink-0"><Pencil size={14} className="text-stone-600" /></button>
                 </div>
@@ -265,10 +313,31 @@ function NewAdminForm() {
   );
 }
 
-export default function AdminConsole({ email }) {
+export default function AdminConsole({ email, userId }) {
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const [activeOrg, setActiveOrg] = useState(null);
+
+  // En que organizacion esta "dentro" el admin ahora (su perfil temporal), o null.
+  const checkActive = useCallback(async () => {
+    const { data: prof } = await supabase.from('profiles').select('organization_id').eq('id', userId).maybeSingle();
+    let org = null;
+    if (prof?.organization_id) {
+      const { data } = await supabase.from('organizations').select('id, name, slug, logo_path, color_accent').eq('id', prof.organization_id).maybeSingle();
+      org = data;
+    }
+    setActiveOrg(org);
+    return org;
+  }, [userId]);
+  useEffect(() => {
+    checkActive();
+    // Si sale (o entra) desde otra pestaña, al volver a esta se entera.
+    const onFocus = () => document.visibilityState === 'visible' && checkActive();
+    document.addEventListener('visibilitychange', onFocus);
+    window.addEventListener('focus', onFocus);
+    return () => { document.removeEventListener('visibilitychange', onFocus); window.removeEventListener('focus', onFocus); };
+  }, [checkActive]);
 
   const loadOrgs = async () => {
     setLoading(true);
@@ -283,7 +352,7 @@ export default function AdminConsole({ email }) {
   return (
     <div className="min-h-dvh font-body" style={{ background: '#F5F2EC' }}>
       <header className="bg-white/80 backdrop-blur sticky top-0 z-30 border-b cream-border px-4 sm:px-8 py-4 flex items-center gap-3">
-        <div className="w-8 h-8 accent-bg rounded-md flex items-center justify-center"><Sparkles size={16} className="text-white" strokeWidth={2.4} /></div>
+        <div className="w-8 h-8 accent-bg rounded-md flex items-center justify-center"><Sparkles size={16} strokeWidth={2.4} /></div>
         <div className="flex-1 min-w-0">
           <div className="font-display text-lg leading-tight ink">Admin de plataforma</div>
           <div className="text-[13px] text-stone-500 truncate">{email ? `Conectado como ${email}` : 'Alta de organizaciones'}</div>
@@ -292,7 +361,8 @@ export default function AdminConsole({ email }) {
       </header>
       <main className="max-w-3xl mx-auto p-4 sm:p-8 space-y-6">
         {loadError && <Banner banner={{ kind: 'error', text: `No se pudieron cargar las organizaciones: ${humanEdgeError(loadError)}` }} />}
-        <OrgsList orgs={orgs} loading={loading} onChanged={loadOrgs} />
+        {activeOrg && <ActiveOrgCard org={activeOrg} userId={userId} onLeft={() => setActiveOrg(null)} />}
+        <OrgsList orgs={orgs} loading={loading} onChanged={loadOrgs} activeOrg={activeOrg} checkActive={checkActive} />
         <NewOrgForm onDone={loadOrgs} />
         <NewAdminForm />
         <ChangePasswordCard />

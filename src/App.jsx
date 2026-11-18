@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  LayoutDashboard, Users, ClipboardCheck, ExternalLink, Settings, Search, Plus, Layers, Sparkles, LogOut, Menu, X, Loader2, AlertCircle,
+  LayoutDashboard, Users, ClipboardCheck, ExternalLink, Settings, Search, Plus, Layers, Sparkles, LogOut, Menu, X, Loader2, AlertCircle, ArrowLeft,
 } from 'lucide-react';
 import { supabase, configured } from './lib/supabase.js';
-import { StoreProvider, useStore } from './lib/store.jsx';
+import { StoreProvider, useStore, leaveOrg } from './lib/store.jsx';
 import { TenantProvider, useTenant } from './lib/tenant.jsx';
 import { stripDiacritics } from './lib/catalog.js';
 import { Button, Input, SponsorLogo, Toast } from './ui.jsx';
@@ -42,7 +42,7 @@ function BrandMark({ size = 36, iconSize = 16 }) {
   if (logoUrl) return <img src={logoUrl} alt={name} style={{ width: size, height: size }} className="rounded-md object-contain flex-shrink-0 bg-white" />;
   return (
     <div className="accent-bg rounded-md flex items-center justify-center flex-shrink-0" style={{ width: size, height: size }}>
-      <Sparkles size={iconSize} className="text-white" strokeWidth={2.4} />
+      <Sparkles size={iconSize} strokeWidth={2.4} />
     </div>
   );
 }
@@ -67,21 +67,21 @@ function Login() {
         <div className="flex items-center gap-2">
           <BrandMark size={36} />
           <div>
-            <div className="font-display text-xl leading-tight ink">{name}</div>
-            <div className="text-[13px] text-stone-500">Patrocinios</div>
+            <div className="font-display text-xl leading-tight ink">{name || 'Patrocinios'}</div>
+            {name && <div className="text-[13px] text-stone-500">Patrocinios</div>}
           </div>
         </div>
         <div>
           <h1 className="font-display text-2xl ink">Inicia sesión</h1>
-          <p className="text-sm text-stone-600 mt-1">Usa el email y la clave que te dio {name}.</p>
+          <p className="text-sm text-stone-600 mt-1">Usa el email y la clave que te dio {name || 'tu compañía'}.</p>
         </div>
         <Input label="Email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         <Input label="Clave" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
         {error && <div className="text-sm text-red-700 flex items-center gap-1.5"><AlertCircle size={14} /> {error}</div>}
-        <button type="submit" disabled={busy} className="w-full accent-bg text-white rounded-full py-2.5 text-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60">
+        <button type="submit" disabled={busy} className="w-full accent-bg rounded-full py-2.5 text-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60">
           {busy && <Loader2 size={14} className="animate-spin" />} Entrar
         </button>
-        <p className="text-xs text-stone-500">¿No tienes acceso? Escríbele a tu contacto en {name}.</p>
+        <p className="text-xs text-stone-500">¿No tienes acceso? Escríbele a {name ? `tu contacto en ${name}` : 'quien te dio la cuenta'}.</p>
       </form>
     </div>
   );
@@ -109,42 +109,42 @@ function Sidebar({ view, setView, open, onClose }) {
   return (
     <>
       {open && <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={onClose} />}
-      <aside className={`w-64 lg:w-60 ink-bg text-stone-200 flex flex-col h-dvh fixed lg:sticky top-0 left-0 z-50 lg:z-auto transition-transform
+      <aside className={`w-64 lg:w-60 ink-bg flex flex-col h-dvh fixed lg:sticky top-0 left-0 z-50 lg:z-auto transition-transform
         ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <div className="px-5 pt-6 pb-4 border-b border-white/5 flex items-center gap-2">
+        <div className="px-5 pt-6 pb-4 border-b on-ink-line flex items-center gap-2">
           <BrandMark size={32} />
           <div className="flex-1 min-w-0">
-            <div className="font-display text-lg leading-tight text-white truncate">{name}</div>
-            <div className="text-[13px] text-stone-400">Patrocinios</div>
+            <div className="font-display text-lg leading-tight truncate">{name || 'Patrocinios'}</div>
+            {name && <div className="text-[13px] on-ink-muted">Patrocinios</div>}
           </div>
-          <button className="lg:hidden text-stone-400 hover:text-white p-1" onClick={onClose} aria-label="Cerrar menú"><X size={18} /></button>
+          <button className="lg:hidden on-ink-item rounded-md p-1" onClick={onClose} aria-label="Cerrar menú"><X size={18} /></button>
         </div>
         <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto scrollbar-thin">
           {items.map(({ key, label, Icon, badge }) => (
             <button key={key} onClick={() => go(key)}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors
-                ${view.name === key || (key === 'sponsors' && view.name === 'sponsor') ? 'bg-white/10 text-white' : 'text-stone-400 hover:bg-white/5 hover:text-white'}`}>
+                ${view.name === key || (key === 'sponsors' && view.name === 'sponsor') ? 'on-ink-active' : 'on-ink-item'}`}>
               <Icon size={16} strokeWidth={1.8} />
               <span className="flex-1 text-left">{label}</span>
-              {badge && <span className="text-xs accent-bg text-white px-1.5 rounded-full font-semibold min-w-[18px] text-center">{badge}</span>}
+              {badge && <span className="text-xs accent-bg px-1.5 rounded-full font-semibold min-w-[18px] text-center">{badge}</span>}
             </button>
           ))}
           <button onClick={() => go('settings')}
-            className={`mt-4 w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${view.name === 'settings' ? 'bg-white/10 text-white' : 'text-stone-400 hover:bg-white/5 hover:text-white'}`}>
+            className={`mt-4 w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${view.name === 'settings' ? 'on-ink-active' : 'on-ink-item'}`}>
             <Settings size={16} strokeWidth={1.8} /><span>Configuración</span>
           </button>
         </nav>
-        <div className="border-t border-white/5 p-3">
+        <div className="border-t on-ink-line p-3">
           <div className="flex items-center gap-2.5 px-2 py-1.5">
-            <div className="w-8 h-8 rounded-full accent-bg flex items-center justify-center text-white text-xs font-semibold">
+            <div className="w-8 h-8 rounded-full accent-bg flex items-center justify-center text-xs font-semibold">
               {me.full_name.split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm text-white truncate">{me.full_name}</div>
-              <div className="text-xs text-stone-400 truncate">{me.title}</div>
+              <div className="text-sm truncate">{me.full_name}</div>
+              <div className="text-xs on-ink-muted truncate">{me.title}</div>
             </div>
             <button onClick={() => supabase.auth.signOut()} title="Salir" aria-label="Salir"
-              className="w-8 h-8 rounded-full hover:bg-white/10 inline-flex items-center justify-center"><LogOut size={16} className="text-stone-300" /></button>
+              className="w-8 h-8 rounded-full on-ink-item inline-flex items-center justify-center"><LogOut size={16} /></button>
           </div>
         </div>
       </aside>
@@ -199,19 +199,25 @@ function Topbar({ title, subtitle, actions, setView, onMenu }) {
 }
 
 /* ---------- Cartel para el admin de plataforma que esta "viendo como equipo" ---------- */
+// Solo lo ve el admin de plataforma que entro desde el panel de organizaciones. Un admin
+// esta dentro de UNA organizacion a la vez y en la misma pestaña: para abrir otra, sale por
+// aca y vuelve al panel (en la raiz, sin organizacion en el path).
 function ImpersonationBanner() {
-  const { me } = useStore();
+  const { me, notify } = useStore();
+  const { name } = useTenant();
+  const [busy, setBusy] = useState(false);
   const exit = async () => {
-    await supabase.from('profiles').delete().eq('id', me.id);
-    window.close();
-    // Si el navegador no deja cerrar la pestaña (no la abrio un script), al menos la manda
-    // a la raiz -- ahi, sin organizacion en el path, vuelve a ser el panel de admin.
-    window.location.href = window.location.origin + '/';
+    setBusy(true);
+    const error = await leaveOrg(me.id);
+    if (error) { setBusy(false); notify('No se pudo salir de la organización. Intenta de nuevo.', 'error'); return; }
+    window.location.assign('/');
   };
   return (
-    <div className="ink-bg text-white px-4 py-2 text-xs flex items-center justify-between gap-3">
-      <span>Estás viendo esta organización como admin de plataforma, con tu propia cuenta. Lo que hagas queda a nombre de &quot;Admin de plataforma&quot;.</span>
-      <button onClick={exit} className="underline flex-shrink-0">Salir de la organización</button>
+    <div className="bg-amber-100 text-amber-950 border-b border-amber-200 px-4 sm:px-8 py-2 text-xs flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+      <span>Estás dentro de <b>{name || 'esta organización'}</b> como admin de plataforma. Lo que hagas queda a nombre de &quot;Admin de plataforma&quot;.</span>
+      <button onClick={exit} disabled={busy} className="inline-flex items-center gap-1.5 font-medium underline flex-shrink-0 disabled:opacity-60">
+        {busy ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeft size={12} />} Salir y volver al panel
+      </button>
     </div>
   );
 }
@@ -227,7 +233,7 @@ function TeamApp() {
 
   if (view.name === 'portal') {
     const id = view.id && data.byId[view.id] ? view.id : data.sponsors[0]?.id;
-    return <ClientPortal id={id} preview setView={setView} />;
+    return <>{impersonating && <ImpersonationBanner />}<ClientPortal id={id} preview setView={setView} /></>;
   }
   const fmtRange = ev ? `${new Date(`${ev.start_date}T12:00:00`).toLocaleDateString('es-CO', { day: 'numeric' })} y ${new Date(`${ev.end_date}T12:00:00`).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }).replace('.', '')} · ${ev.city}` : '';
   const titles = {
@@ -251,7 +257,7 @@ function TeamApp() {
           : (
             <div className="lg:hidden bg-white border-b cream-border px-4 py-3 flex items-center gap-2 sticky top-0 z-30">
               <button className="p-1.5 -ml-1 rounded-md hover:bg-stone-100" onClick={() => setMenu(true)} aria-label="Abrir menú"><Menu size={20} /></button>
-              <span className="font-display ink">{name} Patrocinios</span>
+              <span className="font-display ink">{name ? `${name} Patrocinios` : 'Patrocinios'}</span>
             </div>
           )}
         {view.name === 'dashboard' && <Dashboard setView={setView} />}
@@ -268,7 +274,10 @@ function TeamApp() {
 }
 
 function Gate() {
-  const { loading, error, data, me, isTeam, reload } = useStore();
+  const { loading, error, data, me, isTeam, reload, platformAdmin, otherOrg } = useStore();
+  const { name } = useTenant();
+  const contact = name ? `tu contacto en ${name}` : 'quien te dio la cuenta';
+  const toPanel = () => window.location.assign('/');
   if (loading) return <Centered><Loader2 className="animate-spin mx-auto text-stone-500" /><p className="text-sm text-stone-600">Cargando…</p></Centered>;
   if (error) return (
     <Centered>
@@ -277,10 +286,29 @@ function Gate() {
       <div className="flex justify-center gap-2"><Button kind="dark" onClick={reload}>Reintentar</Button><Button onClick={() => supabase.auth.signOut()}>Salir</Button></div>
     </Centered>
   );
+  // Admin de plataforma en una pestaña de organizacion que ya no corresponde: salio (quizas
+  // desde otra pestaña) o despues entro a otra. Nunca se mezclan datos: vuelve al panel.
+  if (platformAdmin && !me) return (
+    <Centered>
+      <h1 className="font-display text-2xl ink">Ya no estás dentro de esta organización</h1>
+      <p className="text-sm text-stone-600">Saliste de la organización, quizás desde otra pestaña. Para entrar a una, hazlo desde el panel de organizaciones.</p>
+      <Button kind="dark" Icon={ArrowLeft} onClick={toPanel}>Ir al panel de organizaciones</Button>
+    </Centered>
+  );
+  if (otherOrg) return (
+    <Centered>
+      <h1 className="font-display text-2xl ink">Esta pestaña quedó desactualizada</h1>
+      <p className="text-sm text-stone-600">Ahora estás dentro de <b>{otherOrg.name}</b>. Como admin de plataforma puedes estar dentro de una sola organización a la vez.</p>
+      <div className="flex flex-wrap justify-center gap-2">
+        <Button kind="dark" onClick={() => window.location.assign(`/${otherOrg.slug}/`)}>Ir a {otherOrg.name}</Button>
+        <Button Icon={ArrowLeft} onClick={toPanel}>Ir al panel</Button>
+      </div>
+    </Centered>
+  );
   if (!me) return (
     <Centered>
       <h1 className="font-display text-2xl ink">Tu cuenta todavía no tiene acceso</h1>
-      <p className="text-sm text-stone-600">Tu cuenta todavía no está asociada a un patrocinio. Escríbele a tu contacto en StartCo para activarla.</p>
+      <p className="text-sm text-stone-600">Tu cuenta todavía no está asociada a un patrocinio. Escríbele a {contact} para activarla.</p>
       <Button onClick={() => supabase.auth.signOut()}>Salir</Button>
     </Centered>
   );
@@ -289,7 +317,7 @@ function Gate() {
   if (!sponsor) return (
     <Centered>
       <h1 className="font-display text-2xl ink">No encontramos tu patrocinio</h1>
-      <p className="text-sm text-stone-600">Escríbele a tu contacto en StartCo para revisarlo.</p>
+      <p className="text-sm text-stone-600">Escríbele a {contact} para revisarlo.</p>
       <Button onClick={() => supabase.auth.signOut()}>Salir</Button>
     </Centered>
   );
@@ -335,7 +363,7 @@ export default function App() {
         if (session === undefined) return <Centered><Loader2 className="animate-spin mx-auto text-stone-500" /></Centered>;
         if (!session) return <Login />;
         if (mode === undefined) return <Centered><Loader2 className="animate-spin mx-auto text-stone-500" /></Centered>;
-        if (mode === 'admin') return <AdminConsole email={session.user.email} />;
+        if (mode === 'admin') return <AdminConsole email={session.user.email} userId={session.user.id} />;
         return (
           <StoreProvider key={session.user.id} session={session}>
             <Gate />

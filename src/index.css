@@ -8,12 +8,28 @@
 .font-mono { font-family: inherit; font-variant-numeric: tabular-nums; }
 code.font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 body, html, #root { font-family: 'Geist Variable', system-ui, sans-serif; background: #F5F2EC; font-variant-numeric: tabular-nums; }
-/* Identidad por tenant (src/lib/tenant.jsx la pisa en runtime); estos son los de StartCo. */
-:root { --tenant-ink: #0F1419; --tenant-accent: #C93D0C; }
-.accent-bg { background: var(--tenant-accent); }
-.accent-text { color: var(--tenant-accent); }
-.ink { color: var(--tenant-ink); }
-.ink-bg { background: var(--tenant-ink); }
+/* Identidad por tenant: src/lib/tenant.jsx (brandVars) las pisa en runtime; estos son los
+   neutros, sin organizacion (mismos valores que DEFAULT_COLORS de tenant.jsx).
+   El color de marca va tal cual como FONDO (.ink-bg / .accent-bg), y esas clases ponen
+   tambien el texto que va encima (blanco u oscuro, por contraste). Como TEXTO sobre fondos
+   claros (.ink / .accent-text) se usa una version oscurecida si hace falta para leerse. */
+:root {
+  --tenant-ink: #0F1419; --tenant-ink-text: #0F1419;
+  --tenant-on-ink: #FFFFFF; --tenant-on-ink-muted: #9FA1A3;
+  --tenant-on-ink-line: rgba(255,255,255,.06); --tenant-on-ink-overlay: #272C30; --tenant-on-ink-overlay-soft: #1B2025;
+  --tenant-accent: #475569; --tenant-accent-text: #475569; --tenant-on-accent: #FFFFFF;
+}
+.accent-bg { background: var(--tenant-accent); color: var(--tenant-on-accent); }
+.accent-text { color: var(--tenant-accent-text); }
+.ink { color: var(--tenant-ink-text); }
+.ink-bg { background: var(--tenant-ink); color: var(--tenant-on-ink); }
+/* Dentro de un .ink-bg: texto secundario, separadores y estados de los items (sidebar). */
+.on-ink-muted { color: var(--tenant-on-ink-muted); }
+.on-ink-line { border-color: var(--tenant-on-ink-line); }
+.on-ink-item { color: var(--tenant-on-ink-muted); }
+.on-ink-item:hover { background: var(--tenant-on-ink-overlay-soft); color: var(--tenant-on-ink); }
+.on-ink-active { background: var(--tenant-on-ink-overlay); color: var(--tenant-on-ink); }
+.on-ink-overlay { background: var(--tenant-on-ink-overlay); }
 .cream-border { border-color: #E4E0D7; }
 .grain { background-image: radial-gradient(rgba(15,20,25,0.025) 1px, transparent 1px); background-size: 4px 4px; }
 .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }

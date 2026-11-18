@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X, Download, Loader2, AlertCircle, CheckCircle2, Copy } from 'lucide-react';
 import { TIER_COLORS, STAGES, initialsOf } from './lib/catalog.js';
 import { useStore, useSignedUrl, signedUrl, hasFile } from './lib/store.jsx';
+import { isHex, isLight, onColor } from './lib/color.js';
 
 export const Pill = ({ children, color = '#0F1419', bg = '#E4E0D7', className = '' }) => (
   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${className}`}
@@ -39,8 +40,8 @@ export const IconButton = ({ Icon, onClick, label, disabled }) => (
 );
 
 const BTN = {
-  primary: 'accent-bg text-white hover:opacity-90 max-sm:min-h-[44px]',
-  dark: 'ink-bg text-white hover:opacity-90',
+  primary: 'accent-bg hover:opacity-90 max-sm:min-h-[44px]',
+  dark: 'ink-bg hover:opacity-90',
   ghost: 'border cream-border bg-white hover:bg-stone-50 text-stone-800',
   danger: 'border border-red-200 bg-white text-red-700 hover:bg-red-50',
 };
@@ -86,6 +87,18 @@ export const Select = ({ label, options, className = '', ...rest }) => (
     </select>
   </label>
 );
+
+// Debajo de un selector de color de marca: muestra como se lee el texto encima del color y,
+// si es claro, avisa que la app ajusta los textos a oscuro (ver brandVars en tenant.jsx).
+export function ColorHint({ color }) {
+  if (!isHex(color)) return null;
+  return (
+    <div className="mt-1.5 flex items-start gap-1.5 text-[11px] text-stone-500 leading-snug">
+      <span className="px-1.5 rounded font-semibold flex-shrink-0 border cream-border" style={{ background: color, color: onColor(color) }}>Aa</span>
+      {isLight(color) && <span>Color claro: los textos encima y los títulos se muestran oscuros para que se lean.</span>}
+    </div>
+  );
+}
 
 export const Textarea = ({ label, className = '', ...rest }) => (
   <label className={`block ${className}`}>
@@ -154,7 +167,7 @@ export function Toast() {
   const err = toast.kind === 'error';
   return (
     <div role="status" aria-live="polite" className="fixed z-[60] bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md">
-      <div className={`px-4 py-3 rounded-xl shadow-lg text-sm flex items-start gap-2.5 ${err ? 'bg-red-700 text-white' : 'ink-bg text-white'}`}>
+      <div className={`px-4 py-3 rounded-xl shadow-lg text-sm flex items-start gap-2.5 ${err ? 'bg-red-700 text-white' : 'ink-bg'}`}>
         {err ? <AlertCircle size={16} className="mt-0.5 flex-shrink-0" /> : <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0 text-emerald-300" />}
         <span>{toast.text}</span>
       </div>
@@ -163,8 +176,9 @@ export function Toast() {
 }
 
 const AV = { 7: 'w-7 h-7', 8: 'w-8 h-8', 9: 'w-9 h-9', 10: 'w-10 h-10' };
-export const Avatar = ({ name, size = 8, color, className = '' }) => (
-  <div className={`${AV[size]} rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${color ? 'text-white' : 'bg-stone-200 text-stone-700'} ${className}`}
+// brand: 'ink' | 'accent' pinta con el color de la organizacion (y el texto que contrasta).
+export const Avatar = ({ name, size = 8, color, brand, className = '' }) => (
+  <div className={`${AV[size]} rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${brand ? `${brand}-bg` : color ? 'text-white' : 'bg-stone-200 text-stone-700'} ${className}`}
     style={color ? { background: color } : {}}>{initialsOf(name)}</div>
 );
 

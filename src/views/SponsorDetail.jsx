@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import {
   ArrowLeft, ExternalLink, CheckCircle2, Circle, MessageSquare, Upload, Send, Trash2, Plus, FileText, Image as ImageIcon, Info, ChevronRight, AlertCircle,
 } from 'lucide-react';
-import { STAGES, CONTRACT_TYPES, CONTRACT_STATUSES, ASSET_STATUS, fmtCOPfull } from '../lib/catalog.js';
+import { STAGES, CONTRACT_TYPES, CONTRACT_STATUSES, ASSET_STATUS, fmtCOPfull, contractTypeLabel } from '../lib/catalog.js';
+import { useTenant } from '../lib/tenant.jsx';
 import { useStore, uploadFile, removeFile, daysSince, daysUntil, fmtDate, ago, humanError, humanEdgeError, invokeEdge } from '../lib/store.jsx';
 import { supabase } from '../lib/supabase.js';
 import { Card, Pill, TierPill, SponsorLogo, Avatar, Button, Input, Select, Textarea, Modal, FileButton, DownloadButton, IconButton, Field, Label, Empty, useBusy, CredentialsModal } from '../ui.jsx';
@@ -312,6 +313,7 @@ function Assets({ s }) {
 /* ---------- Contrato ---------- */
 function Contract({ s }) {
   const { run } = useStore();
+  const { name: orgName } = useTenant();
   const upd = (patch, ok) => run(() => supabase.from('sponsors').update(patch).eq('id', s.id), ok);
   const contractDocs = s.documents.filter((d) => d.kind === 'contrato');
   const legalOk = Boolean(s.legal_razon && s.legal_rut && s.legal_domicilio);
@@ -321,7 +323,7 @@ function Contract({ s }) {
         <div className="font-display text-lg ink">Contrato</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Select label="Modalidad" value={s.contract_type} onChange={(e) => upd({ contract_type: e.target.value }, 'Modalidad actualizada')}
-            options={[{ value: 'Pendiente', label: 'Pendiente' }, ...CONTRACT_TYPES]} />
+            options={[{ value: 'Pendiente', label: 'Pendiente' }, ...CONTRACT_TYPES.map((v) => ({ value: v, label: contractTypeLabel(v, orgName) }))]} />
           <Select label="Estado" value={s.contract_status} onChange={(e) => upd({ contract_status: e.target.value }, 'Estado del contrato actualizado')} options={CONTRACT_STATUSES} />
         </div>
         {s.contract_status !== 'Firmado'
@@ -491,6 +493,7 @@ function Post({ s }) {
 /* ---------- Pantalla ---------- */
 export default function SponsorDetail({ id, tab: hashTab, setView }) {
   const { data } = useStore();
+  const { name: orgName } = useTenant();
   // La pestana vive en el hash: recargar, atras/adelante y links directos la respetan.
   const tab = TABS.some((t) => t.key === hashTab) ? hashTab : 'overview';
   const setTab = (key) => setView({ name: 'sponsor', id, tab: key }, { keepScroll: true });
@@ -504,7 +507,7 @@ export default function SponsorDetail({ id, tab: hashTab, setView }) {
         <div className="flex gap-1 overflow-x-auto scrollbar-thin -mb-px" role="tablist">
           {TABS.map((t) => (
             <button key={t.key} role="tab" aria-selected={tab === t.key} onClick={() => setTab(t.key)}
-              className={`px-3 py-3 text-sm whitespace-nowrap border-b-2 ${tab === t.key ? 'border-[#FF5A1F] ink font-medium' : 'border-transparent text-stone-600 hover:ink'}`}>
+              className={`px-3 py-3 text-sm whitespace-nowrap border-b-2 ${tab === t.key ? 'border-[var(--tenant-accent-text)] ink font-medium' : 'border-transparent text-stone-600 hover:ink'}`}>
               {t.label}{badge[t.key] ? <span className="ml-1.5 text-xs text-stone-500">{badge[t.key]}</span> : null}
             </button>
           ))}
@@ -520,7 +523,7 @@ export default function SponsorDetail({ id, tab: hashTab, setView }) {
               {data.profiles.filter((p) => p.kind === 'team' || p.sponsor_id === s.id).map((p) => (
                 <div key={p.id} className="flex items-center gap-2.5">
                   <span className={`w-2 h-2 rounded-full ${p.kind === 'team' ? 'bg-stone-900' : 'accent-bg'}`} />
-                  <div className="min-w-0"><div className="text-sm ink truncate">{p.full_name}</div><div className="text-xs text-stone-500 truncate">{p.kind === 'team' ? 'StartCo' : s.name}{p.title ? ` · ${p.title}` : ''}</div></div>
+                  <div className="min-w-0"><div className="text-sm ink truncate">{p.full_name}</div><div className="text-xs text-stone-500 truncate">{p.kind === 'team' ? (orgName || 'Equipo') : s.name}{p.title ? ` · ${p.title}` : ''}</div></div>
                 </div>
               ))}
               <div className="text-xs text-stone-500 border-t cream-border pt-3">El patrocinador ve todos los mensajes menos las notas internas.</div>
